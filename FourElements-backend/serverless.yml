@@ -1,0 +1,305 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: molnmiljo
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: FourElements-backend
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: eu-north-1
+  httpApi:
+    cors: true
+
+build:
+  esbuild:
+    minify: true
+
+package:
+  individually: true
+
+functions:
+  # MULTIPLE CARTITEMS
+  getCart:
+    handler: ./functions/Cart/GetCart/index.handler
+    events:
+      - httpApi:
+          path: /cart/get/{cartId}
+          method: get
+  postCart:
+    handler: ./functions/Cart/PostCart/index.handler
+    events:
+      - httpApi:
+          path: /cart/post
+          method: post
+  deleteCart:
+    handler: ./functions/Cart/DeleteCart/index.handler
+    events:
+      - httpApi:
+          path: /cart/delete/{cartId}
+          method: delete
+  putCart:
+    handler: ./functions/Cart/PutCart/index.handler
+    events:
+      - httpApi:
+          path: /cart/put/{cartId}
+          method: put
+  
+  # SINGLE CARTITEM
+  getCartItem:
+    handler: ./functions/Cart/GetCartItem/index.handler
+    events:
+      - httpApi:
+          path: /cartItem/get/{cartItemId}
+          method: get
+  postCartItem:
+    handler: ./functions/Cart/PostCartItem/index.handler
+    events:
+      - httpApi:
+          path: /cartItem/post
+          method: post
+  deleteCartItem:
+    handler: ./functions/Cart/DeleteCartItem/index.handler
+    events:
+      - httpApi:
+          path: /cartItem/delete/{cartItemId}
+          method: delete
+  putCartItem:
+    handler: ./functions/Cart/PutCartItem/index.handler
+    events:
+      - httpApi:
+          path: /cartItem/put/{cartItemId}
+          method: put
+
+  # MULTIPLE USERS
+  getUsers:
+    handler: ./functions/Users/GetUsers/index.handler
+    events:
+      - httpApi:
+          path: /users/get
+          method: get
+
+  deleteUsers:
+    handler: ./functions/Users/DeleteUsers/index.handler
+    events:
+      - httpApi:
+          path: /users/delete
+          method: delete
+  
+  postUsers:
+    handler: ./functions/Users/PostUsers/index.handler
+    events:
+      - httpApi:
+          path: /users/post
+          method: post
+  
+  putUsers:
+    handler: ./functions/Users/PutUsers/index.handler
+    events:
+      - httpApi:
+          path: /users/put
+          method: put
+
+  # SINGLE USER
+  postUser:
+    handler: ./functions/User/PostUser/index.handler
+    events:
+      - httpApi:
+          path: /user/post
+          method: post
+
+  getUser:
+      handler: ./functions/User/GetUser/index.handler
+      events:
+        - httpApi:
+            path: /user/get/{userId}
+            method: get
+  
+  deleteUser:
+      handler: ./functions/User/DeleteUser/index.handler
+      events:
+        - httpApi:
+            path: /user/delete/{userId}
+            method: delete
+
+  putUser:
+    handler: ./functions/User/PutUser/index.handler
+    events:
+      - httpApi:
+          path: /user/put/{userId}
+          method: put
+
+  # SINGLE MENUITEM
+  getMenuItem:
+    handler: ./functions/MenuItem/GetMenuItem/index.handler
+    events:
+      - httpApi:
+          path: /menuItem/get/{menuItemId}
+          method: get
+    
+  postMenuItem: 
+    handler: ./functions/MenuItem/PostMenuItem/index.handler
+    events:
+      - httpApi:
+          path: /menuItem/post
+          method: post
+
+  putMenuItem:
+    handler: ./functions/MenuItem/PutMenuItem/index.handler
+    events:
+      - httpApi:
+          path: /menuItem/put/{menuItemId}
+          method: put
+
+  deleteMenuItem:
+    handler: ./functions/MenuItem/DeleteMenuItem/index.handler
+    events:
+      - httpApi:
+          path: /menuItem/delete/{menuItemId}
+          method: delete
+  
+  # MULTIPLE MENUITEMS
+  getMenu:
+    handler: ./functions/Menu/GetMenu/index.handler
+    events:
+      - httpApi:
+          path: /menu/get
+          method: get
+      
+  postMenu:
+    handler: ./functions/Menu/PostMenu/index.handler
+    events:
+      - httpApi:
+          path: /menu/post
+          method: post
+
+  putMenu:
+    handler: ./functions/Menu/PutMenu/index.handler
+    events:
+      - httpApi:
+          path: /menu/put
+          method: put
+
+  deleteMenu:
+    handler: ./functions/Menu/DeleteMenu/index.handler
+    events: 
+      - httpApi:
+          path: /menu/delete
+          method: delete
+
+  # SINGLE INVENTORY ITEM
+  getInventoryItem:
+    handler: ./functions/InventoryItem/GetInventoryItem/index.handler
+    events:
+      - httpApi:
+          path: /inventoryItem/get/{itemId}
+          method: get
+
+  postInventoryItem:
+    handler: ./functions/InventoryItem/PostInventoryItem/index.handler
+    events: 
+      - httpApi:
+          path: /inventoryItem/post
+          method: post
+        
+  putInventoryItem:
+    handler: ./functions/InventoryItem/PutInventoryItem/index.handler
+    events: 
+      - httpApi:
+          path: /inventoryItem/put/{itemId}
+          method: put
+
+  deleteInventoryItem:
+    handler: ./functions/InventoryItem/DeleteItem/index.handler
+    events:
+      - httpApi:
+          path: /inventoryItem/delete/{itemId}
+          method: delete
+
+    # Multiple Inventory
+  getInventory:
+    handler: ./functions/Inventoy/GetInventory/index.handler
+    events:
+      - httpApi:
+          path: /inventory/get
+          method: get
+  
+  postInventory:
+    handler: ./functions/Inventory/PostInventory/index.handler
+    events:
+      - httpApi:
+          path: /inventory/post
+          method: post
+  
+  putInventory:
+    handler: ./functions/Inventory/PutInventory/index.handler
+    events:
+      - httpApi:
+          path: /inventory/put
+          method: put
+
+  deleteInventory:
+    handler: ./functions/Inventory/DeleteInventory/index.handler
+    events:
+      - httpApi:
+          path: /inventory/delete
+          method: delete
+
+resources:
+  Resources:
+    UserDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: UsersTable
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    
+    MenuDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: MenuTable
+        AttributeDefinitions:
+          - AttributeName: menuId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: menuId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    
+    CartDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CartTable
+        AttributeDefinitions:
+          - AttributeName: cartId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: cartId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+    
+    InventoryDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: InventoryTable
+        AttributeDefinitions:
+          - AttributeName: inventoryId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: inventoryId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+
+
+
+
+
+
+
+
+          
