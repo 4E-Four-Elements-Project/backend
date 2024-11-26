@@ -8,3 +8,11 @@ exports.handler = async (event) => {
   }
   };
   
+  // GLÖM INTE SÖKNING ANVÄNDARNAMN INNAN ID FINSN
+  // GlobalSecondaryIndexes:
+  // - IndexName: UsernameIndex
+  //   KeySchema:
+  //     - AttributeName: username
+  //       KeyType: HASH
+  //   Projection:
+  //     ProjectionType: ALL
