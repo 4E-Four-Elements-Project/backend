@@ -9,19 +9,21 @@ import { GetCommand } from '@aws-sdk/lib-dynamodb'
 const TABLE_NAME = "UsersTable";
 
 const getUserHandler = async (event) => {
-  const userId = event.pathParameters.userId
-  console.log(event);
+  console.log('event:', event);
   
   try {
+    const userId = event.pathParameters.userId
+    console.log('userId: ', userId);
+    
     const params = {
     TableName: TABLE_NAME,
-    Key: { userId },
+    Key: { userId: userId },
   };
-  console.log(params);
+  console.log('params: ', params);
   
 
   const result = await db.send(new GetCommand(params));
-  console.log(result);
+  console.log('result: ', result);
   
   if (!result.Item) {
     sendError(404, "User not found");
@@ -36,5 +38,4 @@ const getUserHandler = async (event) => {
 }
 
 module.exports.handler = middy(getUserHandler)
-// .use(jsonBodyParser())
-.use(httpErrorHandler())
+  .use(httpErrorHandler())

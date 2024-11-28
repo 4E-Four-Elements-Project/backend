@@ -230,7 +230,7 @@ functions:
 
     # Multiple Inventory
   getInventory:
-    handler: ./functions/Inventoy/GetInventory/index.handler
+    handler: ./functions/Inventory/GetInventory/index.handler
     events:
       - httpApi:
           path: /inventory/get
