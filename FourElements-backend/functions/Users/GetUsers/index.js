@@ -1,18 +1,10 @@
-const {sendResponse, sendError} = require('../../../reponses/handler')
+import responseHandler from '../../../responses/index'
+const {sendResponse, sendError} = responseHandler
 
-exports.handler = async (event) => {
+module.exports.handler = async (event) => {
   try {
     sendResponse("Hello")
   } catch (error) {
     sendError(404, error)
   }
-  };
-  
-  // GLÖM INTE SÖKNING ANVÄNDARNAMN INNAN ID FINSN
-  // GlobalSecondaryIndexes:
-  // - IndexName: UsernameIndex
-  //   KeySchema:
-  //     - AttributeName: username
-  //       KeyType: HASH
-  //   Projection:
-  //     ProjectionType: ALL
+};

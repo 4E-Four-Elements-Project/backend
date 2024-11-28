@@ -1,4 +1,4 @@
-const {sendResponse, sendError} = require('../../../reponses/handler')
+const {sendResponse, sendError} = require('../../../responses/handler')
 
 exports.handler = async (event) => {
   try {
