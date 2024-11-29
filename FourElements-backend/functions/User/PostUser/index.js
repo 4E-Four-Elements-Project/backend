@@ -9,6 +9,7 @@ import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
 import {transpileSchema} from '@middy/validator/transpile'
 import hashPassword from '../../../middleware/hash'
+import getUserByUsername from '../../../middleware/checkUsername'
 
 const TABLE_NAME = 'UsersTable'
 
@@ -25,9 +26,17 @@ const createUserHandler = async (event, context) => {
   const userId = uuid()
   const {username, email, password} = event.body
   console.log(event);
-  
+
+  //Check if username already exist in database
+  const isUsernameTaken = await getUserByUsername(username)
+  if(isUsernameTaken) return sendError(400, "Username already taken")
+    console.log(isUsernameTaken);
+    
   try {
+    //Hash password
     const hashedPassword = await hashPassword(password)
+
+    //Save parameters
     const params = {
       TableName: TABLE_NAME,
       Item: {
@@ -39,6 +48,7 @@ const createUserHandler = async (event, context) => {
       },
     }
 
+    //Send request to database
     await db.send(new PutCommand(params))
 
     return sendResponse({ message: 'User created successfully', userId: userId })
