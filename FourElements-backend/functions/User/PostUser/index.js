@@ -8,6 +8,7 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
 import {transpileSchema} from '@middy/validator/transpile'
+import hashPassword from '../../../middleware/hash'
 
 const TABLE_NAME = 'UsersTable'
 
@@ -26,12 +27,13 @@ const createUserHandler = async (event, context) => {
   console.log(event);
   
   try {
+    const hashedPassword = await hashPassword(password)
     const params = {
       TableName: TABLE_NAME,
       Item: {
         userId: userId,
         username: username,
-        password: password,
+        password: hashedPassword,
         email: email,
         role: "customer"
       },
@@ -56,7 +58,7 @@ const schema = {
       properties: {
         username: { type: 'string', minLength: 4 },
         email: { type: 'string', minLength: 10 },
-        password: { type: 'string', minLength: 10 },
+        password: { type: 'string', minLength: 7 },
       },
       required: ['username', 'email', 'password'],
     },

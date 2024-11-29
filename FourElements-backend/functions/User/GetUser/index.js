@@ -35,7 +35,7 @@ const getUserHandler = async (event) => {
     return sendError(404, "User not found");
   }
  
-  return sendResponse(result);
+  return sendResponse(result.Items);
 
   } catch (error) {
     console.error("Error fetching user:", error);
