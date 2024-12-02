@@ -141,6 +141,27 @@ functions:
           path: /user/put/{userId}
           method: put
 
+  login:
+    handler: ./functions/User/Login/index.handler
+    events:
+      - httpApi:
+          path: /user/login
+          method: post
+  
+  logout:
+    handler: ./functions/User/Logout/index.handler
+    events:
+      - httpApi:
+          path: /user/logout
+          method: post
+
+  verify:
+    handler: ./functions/User/Verify/index.handler
+    events:
+      - httpApi:
+          path: /user/verify
+          method: post
+
   # SINGLE MENUITEM
   getMenuItem:
     handler: ./functions/MenuItem/GetMenuItem/index.handler
@@ -295,7 +316,7 @@ resources:
     CartDataManager:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: CartTable
+        TableName: CartDataTable #change back to CartTable
         AttributeDefinitions:
           - AttributeName: cartId
             AttributeType: S
@@ -313,5 +334,18 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: inventoryId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    
+    LoginDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: LoginTable
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST

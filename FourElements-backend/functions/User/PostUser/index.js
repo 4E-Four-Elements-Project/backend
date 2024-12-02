@@ -8,7 +8,8 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
 import {transpileSchema} from '@middy/validator/transpile'
-import hashPassword from '../../../middleware/hash'
+import hash from '../../../middleware/hash'
+const {hashPassword} = hash
 import getUserByUsername from '../../../middleware/checkUsername'
 
 const TABLE_NAME = 'UsersTable'
@@ -47,7 +48,8 @@ const createUserHandler = async (event, context) => {
         role: "customer"
       },
     }
-
+    console.log('params: ', params);
+    
     //Send request to database
     await db.send(new PutCommand(params))
 

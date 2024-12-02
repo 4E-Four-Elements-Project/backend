@@ -12,4 +12,14 @@ const hashPassword = async (password) => {
     }
 }
 
-export default hashPassword;
+const comparePassword = async (password, hashedPassword) => {
+    try {
+        const match = await bcrypt.compare(password, hashedPassword);
+        return match;
+    } catch (error) {
+        console.error('Error comparing password: ', error)
+        throw new Error('Error comparing password');
+    }
+}
+
+export default {hashPassword, comparePassword};
