@@ -18,10 +18,10 @@ export default getUserId = async (username) => {
         console.log('result:', result);
 
         if(!result || !result.Items || result.Items.length === 0) {
-            return sendError(404, "Userid not found")
+            return sendError(404, "User not found")
         }
 
-        return result.Items[0].userId.S
+        return result.Items[0]
        
       
     } catch (error) {
