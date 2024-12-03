@@ -32,15 +32,18 @@ async function loginHandler(event) {
     console.log('userId: ', userId);
     console.log('hashedPassword: ', hashedPassword);
 
-    //Save as a boolean
+    //Check if password input and stored hashedpassword is a match
     const passwordMatch = await comparePassword(password, hashedPassword)
     if(!passwordMatch) {
         return sendError(401, "Invalid password")
     }
 
+    //Generate token that encapsulates userId
     const token = generateToken(userId)
     if(!token) return sendError(500, "Failed to generate token")
-    console.log(token);
+    console.log('token: ', token);
+
+    // const tokenArray = 
     
     return sendResponse(token);
 
