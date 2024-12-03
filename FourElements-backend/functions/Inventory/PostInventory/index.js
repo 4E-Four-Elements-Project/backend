@@ -19,7 +19,6 @@ export const handler = async (event) => {
         inventoryId: item,
         quantity,
       },
-      ConditionExpression: "attribute_not_exists(inventoryId)",
     };
 
     await db.send(new PutCommand(addItemParams));
