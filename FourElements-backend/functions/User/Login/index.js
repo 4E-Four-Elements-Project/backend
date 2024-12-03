@@ -8,6 +8,7 @@ import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
 import auth from '../../../middleware/auth';
 const { generateToken, verifyToken } = auth;
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 async function loginHandler(event) {
 
@@ -17,7 +18,7 @@ async function loginHandler(event) {
     if (!username || !password) {
         sendError(400, "Username and password are required")
     }
-    console.log(username, password);
+    // console.log(username, password);
 
     //Get the user info from the database
     const user = await getUserId(username)
@@ -28,9 +29,9 @@ async function loginHandler(event) {
     //Save userId and hashedpassword check if the provided password is correct
     const userId = user.userId.S
     const hashedPassword = user.password?.S
-    console.log('user:', user)
-    console.log('userId: ', userId);
-    console.log('hashedPassword: ', hashedPassword);
+    // console.log('user:', user)
+    // console.log('userId: ', userId);
+    // console.log('hashedPassword: ', hashedPassword);
 
     //Check if password input and stored hashedpassword is a match
     const passwordMatch = await comparePassword(password, hashedPassword)
@@ -43,9 +44,39 @@ async function loginHandler(event) {
     if(!token) return sendError(500, "Failed to generate token")
     console.log('token: ', token);
 
-    // const tokenArray = 
+    const tokenArray = user.tokens?.L.map || []
+    tokenArray.push(token)
+    const params = {
+        TableName: "LoginTable",
+        Key: {
+            userId: userId
+        },
+        UpdateExpression: "SET tokens = :tokens",
+        ExpressionAttributeValues: {
+            ":tokens": tokenArray
+        },
+        ReturnValues: "UPDATED_NEW"
+    }
+    console.log('tokenArray: ', tokenArray);
     
-    return sendResponse(token);
+    console.log('params: ', params);
+    
+
+    const response = {
+        userId: userId,
+        username: username,
+        token: token
+    }
+
+    console.log('response: ', response);
+    
+    try{
+        await db.send(new UpdateCommand(params))
+        return sendResponse("User logged in successfully", response)
+    } catch (error) {
+        console.error('Error logging in:', error)
+        return sendError(500, "Failed to login user")
+    }
 
 }
 
