@@ -92,33 +92,33 @@ functions:
           method: put
 
   # MULTIPLE USERS
-  getUsers:
-    handler: ./functions/Users/GetUsers/index.handler
-    events:
-      - httpApi:
-          path: /users/get
-          method: get
+  # getUsers:
+  #   handler: ./functions/Users/GetUsers/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /users/get
+  #         method: get
 
-  deleteUsers:
-    handler: ./functions/Users/DeleteUsers/index.handler
-    events:
-      - httpApi:
-          path: /users/delete
-          method: delete
+  # deleteUsers:
+  #   handler: ./functions/Users/DeleteUsers/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /users/delete
+  #         method: delete
   
-  postUsers:
-    handler: ./functions/Users/PostUsers/index.handler
-    events:
-      - httpApi:
-          path: /users/post
-          method: post
+  # postUsers:
+  #   handler: ./functions/Users/PostUsers/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /users/post
+  #         method: post
   
-  putUsers:
-    handler: ./functions/Users/PutUsers/index.handler
-    events:
-      - httpApi:
-          path: /users/put
-          method: put
+  # putUsers:
+  #   handler: ./functions/Users/PutUsers/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /users/put
+  #         method: put
 
   # SINGLE USER
   postUser:
