@@ -9,9 +9,9 @@ const generateToken = (userId) => {
 
 const verifyToken = (userId, token) => {
   if(!userId || !token) throw new Error("userId and token are required")
-  return jwt.verify(token, JWT_SECRET, (err, decoded) => {
+  return jwt.verify(token, JWT_SECRET, (err, response) => {
     if (err) return {verified: false, message: "Invalid token"}
-    if (responses.userId !== userId) return {verified: false, message: "userId mismatch"}
+    if (response.userId !== userId) return {verified: false, message: "userId mismatch"}
     return {verified: true, message: "Token is valid"}
   });
 };
