@@ -7,7 +7,7 @@ import getUserId from '../../../middleware/getUserId';
 import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
 import auth from '../../../middleware/auth';
-const { generateToken, verifyToken } = auth;
+const { generateToken } = auth;
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 async function loginHandler(event) {
@@ -47,7 +47,7 @@ async function loginHandler(event) {
     const tokenArray = user.tokens?.L.map || []
     tokenArray.push(token)
     const params = {
-        TableName: "LoginTable",
+        TableName: "UsersTable",
         Key: {
             userId: userId
         },
