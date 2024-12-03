@@ -10,7 +10,7 @@ function sendResponse(data) {
  function sendError(statusCode, errorMessage) {
     return {
       statusCode: statusCode,
-      body: JSON.stringify({ errorMessage }),
+      body: JSON.stringify({ errorMessage: "Oh my.. something went terribly wrong!" }),
     };
   }
   
