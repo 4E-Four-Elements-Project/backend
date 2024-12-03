@@ -1,5 +1,5 @@
 # "org" ensures this Service is used with the correct Serverless Framework Access Key.
-org: molnmiljo
+
 # "service" is the name of this project. This will also be added to your AWS resource names.
 service: FourElements-backend
 
@@ -22,6 +22,14 @@ provider:
           Resource: "*"
   httpApi:
     cors: true
+
+plugins:
+  - serverless-plugin-scripts
+
+custom:
+  scripts:
+    hooks:
+      'before:deploy:deploy': 'sls remove'
 
 build:
   esbuild:
@@ -74,7 +82,7 @@ functions:
     handler: ./functions/Cart/DeleteCartItem/index.handler
     events:
       - httpApi:
-          path: /cartItem/delete/{cartItemId}
+          path: /cartItem/remove/{cartId}
           method: delete
   putCartItem:
     handler: ./functions/Cart/PutCartItem/index.handler
@@ -141,6 +149,27 @@ functions:
           path: /user/put/{userId}
           method: put
 
+  login:
+    handler: ./functions/User/Login/index.handler
+    events:
+      - httpApi:
+          path: /user/login
+          method: post
+  
+  logout:
+    handler: ./functions/User/Logout/index.handler
+    events:
+      - httpApi:
+          path: /user/logout
+          method: post
+
+  verify:
+    handler: ./functions/User/Verify/index.handler
+    events:
+      - httpApi:
+          path: /user/verify
+          method: post
+
   # SINGLE MENUITEM
   getMenuItem:
     handler: ./functions/MenuItem/GetMenuItem/index.handler
@@ -196,7 +225,7 @@ functions:
     handler: ./functions/Menu/DeleteMenu/index.handler
     events: 
       - httpApi:
-          path: /menu/delete
+          path: /menu/delete/{menuId}
           method: delete
 
   # SINGLE INVENTORY ITEM
@@ -254,8 +283,10 @@ functions:
     handler: ./functions/Inventory/DeleteInventory/index.handler
     events:
       - httpApi:
-          path: /inventory/delete
+          path: /inventory/delete/{inventoryId}
           method: delete
+
+
 
 resources:
   Resources:
@@ -299,11 +330,39 @@ resources:
         AttributeDefinitions:
           - AttributeName: cartId
             AttributeType: S
+          - AttributeName: menuId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: cartId
+            KeyType: HASH
+          - AttributeName: menuId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+    
+    NewCartDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: CartDataTable #change back to CartTable
+        AttributeDefinitions:
+          - AttributeName: cartId
+            AttributeType: S
         KeySchema:
           - AttributeName: cartId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
     
+    LoginDataManager:
+          Type: AWS::DynamoDB::Table
+          Properties:
+            TableName: LoginTable
+            AttributeDefinitions:
+              - AttributeName: userId
+                AttributeType: S
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            BillingMode: PAY_PER_REQUEST
+
     InventoryDataManager:
       Type: AWS::DynamoDB::Table
       Properties:
