@@ -326,7 +326,7 @@ resources:
     CartDataManager:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: CartDataTable #change back to CartTable
+        TableName: CartTable #change back to CartTable
         AttributeDefinitions:
           - AttributeName: cartId
             AttributeType: S
