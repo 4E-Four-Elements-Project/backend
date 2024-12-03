@@ -8,6 +8,9 @@ import jsonBodyParser from '@middy/http-json-body-parser'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
 import {transpileSchema} from '@middy/validator/transpile'
+import hash from '../../../middleware/hash'
+const {hashPassword} = hash
+import getUserByUsername from '../../../middleware/checkUsername'
 
 const TABLE_NAME = 'UsersTable'
 
@@ -24,19 +27,30 @@ const createUserHandler = async (event, context) => {
   const userId = uuid()
   const {username, email, password} = event.body
   console.log(event);
-  
+
+  //Check if username already exist in database
+  const isUsernameTaken = await getUserByUsername(username)
+  if(isUsernameTaken) return sendError(400, "Username already taken")
+    console.log(isUsernameTaken);
+    
   try {
+    //Hash password
+    const hashedPassword = await hashPassword(password)
+
+    //Save parameters
     const params = {
       TableName: TABLE_NAME,
       Item: {
         userId: userId,
         username: username,
-        password: password,
+        password: hashedPassword,
         email: email,
         role: "customer"
       },
     }
-
+    console.log('params: ', params);
+    
+    //Send request to database
     await db.send(new PutCommand(params))
 
     return sendResponse({ message: 'User created successfully', userId: userId })
@@ -56,7 +70,7 @@ const schema = {
       properties: {
         username: { type: 'string', minLength: 4 },
         email: { type: 'string', minLength: 10 },
-        password: { type: 'string', minLength: 10 },
+        password: { type: 'string', minLength: 7 },
       },
       required: ['username', 'email', 'password'],
     },

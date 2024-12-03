@@ -326,7 +326,7 @@ resources:
     CartDataManager:
       Type: AWS::DynamoDB::Table
       Properties:
-        TableName: CartTable
+        TableName: CartDataTable #change back to CartTable
         AttributeDefinitions:
           - AttributeName: cartId
             AttributeType: S
@@ -372,5 +372,18 @@ resources:
             AttributeType: S
         KeySchema:
           - AttributeName: inventoryId
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    
+    LoginDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: LoginTable
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
             KeyType: HASH
         BillingMode: PAY_PER_REQUEST
