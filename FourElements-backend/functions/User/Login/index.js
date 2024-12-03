@@ -44,7 +44,7 @@ async function loginHandler(event) {
     if(!token) return sendError(500, "Failed to generate token")
     console.log('token: ', token);
 
-    const tokenArray = user.tokens?.L.map || []
+    const tokenArray = user.tokens?.L.map(item => item.S) || []
     tokenArray.push(token)
     const params = {
         TableName: "UsersTable",
