@@ -7,7 +7,6 @@ import validator from '@middy/validator'
 import { transpileSchema } from '@middy/validator/transpile'
 
 const { sendResponse, sendError } = responseHandler
-const TABLE_NAME = "UsersTable";
 
 const getUserHandler = async (event) => {
   
@@ -20,7 +19,7 @@ const getUserHandler = async (event) => {
 
     //Save params for database
     const params = {
-      TableName: TABLE_NAME,
+      TableName: "UsersTable",
       FilterExpression: "userId = :userId",
       ExpressionAttributeValues: {
         ":userId": {S: userId},
