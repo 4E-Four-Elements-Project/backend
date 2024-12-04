@@ -6,22 +6,53 @@ import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
-    const { menuId, ingredients } = body;
+    const { menuId, price, category, description, ingredients } = body;
 
     // Validate input
-    if (!menuId || !ingredients || !Array.isArray(ingredients)) {
-      return sendError(400, "Invalid input: 'menuId' and 'ingredients' are required. 'ingredients' must be an array.");
+    if (!menuId) {
+      return sendError(400, "Invalid input: 'menuId' is required.");
     }
+
+    if (!price && !category && !description && !ingredients) {
+      return sendError(400, "Invalid input: At least one field ('price', 'category', 'description', 'ingredients') must be provided for update.");
+    }
+
+    let updateExpression = "SET";
+    const expressionAttributeValues = {};
+
+    if (price !== undefined) {
+      updateExpression += " price = :price,";
+      expressionAttributeValues[":price"] = price;
+    }
+
+    if (category !== undefined) {
+      updateExpression += " category = :category,";
+      expressionAttributeValues[":category"] = category;
+    }
+
+    if (description !== undefined) {
+      updateExpression += " description = :description,";
+      expressionAttributeValues[":description"] = description;
+    }
+
+    if (ingredients !== undefined) {
+      if (!Array.isArray(ingredients)) {
+        return sendError(400, "Invalid input: 'ingredients' must be an array.");
+      }
+      updateExpression += " ingredients = :ingredients,";
+      expressionAttributeValues[":ingredients"] = ingredients;
+    }
+
+    // Remove trailing comma
+    updateExpression = updateExpression.slice(0, -1);
 
     const updateParams = {
       TableName: "MenuTable",
-      Key: { menuId }, 
-      UpdateExpression: "SET ingredients = :ingredients",
-      ExpressionAttributeValues: {
-        ":ingredients": ingredients,
-      },
+      Key: { menuId },
+      UpdateExpression: updateExpression,
+      ExpressionAttributeValues: expressionAttributeValues,
       ConditionExpression: "attribute_exists(menuId)", 
-      ReturnValues: "UPDATED_NEW", 
+      ReturnValues: "UPDATED_NEW", // Return only the updated attributes
     };
 
     const result = await db.send(new UpdateCommand(updateParams));
