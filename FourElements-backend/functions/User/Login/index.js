@@ -1,14 +1,16 @@
-import hash from '../../../middleware/hash'
-const {comparePassword} = hash
-import db from '../../../services/db';
 import responseHandler from '../../../responses/index'
-const {sendResponse, sendError} = responseHandler
+import db from '../../../services/db';
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
+import hash from '../../../middleware/hash'
+import auth from '../../../middleware/auth';
 import getUserId from '../../../middleware/getUserId';
 import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
-import auth from '../../../middleware/auth';
+import httpErrorHandler from '@middy/http-error-handler';
+
+const { comparePassword } = hash
+const { sendResponse, sendError } = responseHandler
 const { generateToken } = auth;
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
 
 async function loginHandler(event) {
 
@@ -18,61 +20,50 @@ async function loginHandler(event) {
     if (!username || !password) {
         sendError(400, "Username and password are required")
     }
-    // console.log(username, password);
 
-    //Get the user info from the database
-    const user = await getUserId(username)
-    if (!user) {
-        return sendError(404, "User not found")
-    }
+    try {
+        //Check if user exist in database and save user details
+        const user = await getUserId(username)
+        const userId = user?.userId.S
+        const hashedPassword = user?.password?.S
 
-    //Save userId and hashedpassword check if the provided password is correct
-    const userId = user.userId.S
-    const hashedPassword = user.password?.S
-    // console.log('user:', user)
-    // console.log('userId: ', userId);
-    // console.log('hashedPassword: ', hashedPassword);
+        //Check if input password is a match to hashedpassword in database
+        const passwordMatch = await comparePassword(password, hashedPassword)
+        if(!passwordMatch) {
+            return sendError(401, "Invalid password")
+        }
 
-    //Check if password input and stored hashedpassword is a match
-    const passwordMatch = await comparePassword(password, hashedPassword)
-    if(!passwordMatch) {
-        return sendError(401, "Invalid password")
-    }
+        //Generate token valid for 1h
+        const token = generateToken(userId)        
+        if(!token) return sendError(500, "Failed to generate token")
+        
+        //Save token in array
+        const tokenArray = user?.tokens.L || []
+        tokenArray.push(token)
 
-    //Generate token that encapsulates userId
-    const token = generateToken(userId)
-    if(!token) return sendError(500, "Failed to generate token")
-    console.log('token: ', token);
+        //Params for database
+        const params = {
+            TableName: "UsersTable",
+            Key: {
+                userId: userId
+            },
+            UpdateExpression: "SET tokens = :value",
+            ExpressionAttributeValues: {
+                ":value": tokenArray
+            },
+            ReturnValues: "UPDATED_NEW"
+        }
+        
+        //Format response
+        const response = {
+            userId: userId,
+            username: username,
+            token: token
+        }
 
-    const tokenArray = user.tokens?.L.map(item => item.S) || []
-    tokenArray.push(token)
-    const params = {
-        TableName: "UsersTable",
-        Key: {
-            userId: userId
-        },
-        UpdateExpression: "SET tokens = :tokens",
-        ExpressionAttributeValues: {
-            ":tokens": tokenArray
-        },
-        ReturnValues: "UPDATED_NEW"
-    }
-    console.log('tokenArray: ', tokenArray);
-    
-    console.log('params: ', params);
-    
-
-    const response = {
-        userId: userId,
-        username: username,
-        token: token
-    }
-
-    console.log('response: ', response);
-    
-    try{
+        //Update the database
         await db.send(new UpdateCommand(params))
-        return sendResponse("User logged in successfully", response)
+        return sendResponse("User logged in successfully", {response})
     } catch (error) {
         console.error('Error logging in:', error)
         return sendError(500, "Failed to login user")
@@ -82,3 +73,4 @@ async function loginHandler(event) {
 
 module.exports.handler = middy(loginHandler)
   .use(jsonBodyParser())
+  .use(httpErrorHandler())
