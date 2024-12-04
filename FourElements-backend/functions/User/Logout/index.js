@@ -1,21 +1,20 @@
 import responseHandler from '../../../responses/index'
-const {sendResponse, sendError} = responseHandler
-import middy from '@middy/core';
-import auth from '../../../middleware/auth';
-const { verifyToken } = auth;
-import getUserId from '../../../middleware/getUserId';
-import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import jsonBodyParser from '@middy/http-json-body-parser';
 import db from '../../../services/db';
+import { UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import middy from '@middy/core';
+import validator from '@middy/validator'
+import { transpileSchema } from '@middy/validator/transpile'
+import jsonBodyParser from '@middy/http-json-body-parser';
+import httpErrorHandler from '@middy/http-error-handler'
+import auth from '../../../middleware/auth';
+import getUserId from '../../../middleware/getUserId';
 
+const {sendResponse, sendError} = responseHandler
+const { verifyToken } = auth;
 
 async function logout(event){
     const {username, token} = event.body;
-    console.log('event: ', event);
-    console.log('username: ', username);
-    console.log('token: ', token);
-    
-    
+
     if(!username || !token) return sendError(400, "Username and token are required")
     
     const foundUser = await getUserId(username)
@@ -56,5 +55,21 @@ async function logout(event){
     }
 }
 
+const schema = {
+    type: 'object',
+    properties: {
+        body: {
+            type: 'object',
+            properties: {
+                username: { type: 'string', minLength: 4 },
+                token: { type: 'string', minLength: 10 },
+            },
+            required: ['username', 'token'],
+        },
+    },
+}
+
 module.exports.handler = middy(logout)
   .use(jsonBodyParser())
+  .use(validator({ eventSchema: transpileSchema(schema) }))
+  .use(httpErrorHandler())
