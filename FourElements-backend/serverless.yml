@@ -39,6 +39,34 @@ package:
   individually: true
 
 functions:
+
+  getOrder:
+    handler: ./functions/Order/GetOrder/index.handler
+    events:
+      - httpApi:
+          path: /order/get/{cartId}
+          method: get
+  postOrder:
+    handler: ./functions/Order/PostOrder/index.handler
+    events:
+      - httpApi:
+          path: /order/post
+          method: post
+  putOrder:
+    handler: ./functions/Order/PutOrder/index.handler
+    events:
+      - httpApi:
+          path: /order/put/{cartId}
+          method: put
+  deleteOrder:
+    handler: ./functions/Order/DeleteOrder/index.handler
+    events:
+      - httpApi:
+          path: /order/delete/{cartId}
+          method: delete
+
+
+
   # MULTIPLE CARTITEMS
   getCart:
     handler: ./functions/Cart/GetCart/index.handler
@@ -373,4 +401,20 @@ resources:
         KeySchema:
           - AttributeName: inventoryId
             KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+    OrderDataManager:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OrderTable #change back to CartTable
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+          - AttributeName: userId
+            KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
