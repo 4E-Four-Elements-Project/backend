@@ -3,7 +3,7 @@ import db from '../../../services/db';
 import { UpdateCommand } from '@aws-sdk/lib-dynamodb'
 import hash from '../../../middleware/hash'
 import auth from '../../../middleware/auth';
-import getUserId from '../../../middleware/getUserId';
+import getUser from '../../../middleware/getUserDetails';
 import middy from '@middy/core';
 import jsonBodyParser from '@middy/http-json-body-parser';
 import httpErrorHandler from '@middy/http-error-handler';
@@ -23,7 +23,7 @@ async function loginHandler(event) {
 
     try {
         //Check if user exist in database and save user details
-        const user = await getUserId(username)
+        const user = await getUser(username)
         const userId = user?.userId.S
         const hashedPassword = user?.password?.S
 

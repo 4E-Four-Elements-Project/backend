@@ -7,7 +7,7 @@ import { transpileSchema } from '@middy/validator/transpile'
 import jsonBodyParser from '@middy/http-json-body-parser';
 import httpErrorHandler from '@middy/http-error-handler'
 import auth from '../../../middleware/auth';
-import getUserId from '../../../middleware/getUserId';
+import getUser from '../../../middleware/getUserDetails';
 
 const {sendResponse, sendError} = responseHandler
 const { verifyToken } = auth;
@@ -17,7 +17,7 @@ async function logout(event){
 
     if(!username || !token) return sendError(400, "Username and token are required")
     
-    const foundUser = await getUserId(username)
+    const foundUser = await getUser(username)
     console.log('foundUser: ', foundUser);
     console.log('foundUser.userId: ', foundUser.userId.S);
     

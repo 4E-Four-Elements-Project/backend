@@ -5,7 +5,7 @@ import validator from '@middy/validator'
 import { transpileSchema } from '@middy/validator/transpile'
 import httpErrorHandler from '@middy/http-error-handler'
 import auth from '../../../middleware/auth';
-import getUserId from '../../../middleware/getUserId';
+import getUser from '../../../middleware/getUserDetails';
 
 const {sendResponse, sendError} = responseHandler
 const { verifyToken } = auth;
@@ -19,7 +19,7 @@ async function verify(event){
     if(!username || !token) return sendError(400, "Username and token are required")
 
     //Check the database to see if user exist in database and save details in variable
-    const foundUser = await getUserId(username)
+    const foundUser = await getUser(username)
 
     //Error message if user isn't in database
     if (!foundUser) {

@@ -1,9 +1,11 @@
 import responseHandler from '../responses/index'
-const {sendResponse, sendError} = responseHandler
+const {sendError} = responseHandler
 import db from '../services/db'
 import { QueryCommand } from '@aws-sdk/client-dynamodb'
 
-export default getUserId = async (username) => {
+export default getUser = async (username) => {
+
+    //Save params for database query
     const params = {
         TableName: 'UsersTable',
         IndexName: 'UsernameIndex',
@@ -21,6 +23,7 @@ export default getUserId = async (username) => {
             return sendError(404, "User not found")
         }
 
+        //Returns user details if found in database
         return result.Items[0]
        
       
