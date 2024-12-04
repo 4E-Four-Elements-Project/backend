@@ -6,15 +6,17 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body);
+    const { menuId, price, category, description, ingredients } = body;
 
-    const { menuId, ingredients } = body;
-
-    if (!menuId || !ingredients || !Array.isArray(ingredients)) {
-      return sendError(400, "Invalid input: 'menuId' and 'ingredients' are required. 'ingredients' must be an array.");
+    if (!menuId || !price || !category || !description || !ingredients || !Array.isArray(ingredients)) {
+      return sendError(400, "Invalid input: 'menuId', 'price', 'category', 'ingredients' are required. 'ingredients' must be an array.");
     }
 
     const newMenuItem = {
       menuId,
+      price,
+      category,
+      description,
       ingredients,
     };
 

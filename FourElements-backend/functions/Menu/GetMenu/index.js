@@ -23,7 +23,7 @@ export const handler = async () => {
     }, {});
 
     const enrichedMenu = menuItems.map((menuItem) => {
-      const { menuId, ingredients } = menuItem;
+      const { menuId, price, category, description, ingredients } = menuItem;
       const missingIngredients = ingredients.filter(
         (ingredient) => !inventoryMap[ingredient] || inventoryMap[ingredient] <= 0
       );
@@ -31,6 +31,9 @@ export const handler = async () => {
 
       return {
         menuId,
+        price,
+        category,
+        description,
         ingredients,
         possibleToOrder,
         missingIngredients, // Show missing items for unavailable dishes
