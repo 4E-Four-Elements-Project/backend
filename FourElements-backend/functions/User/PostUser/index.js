@@ -1,27 +1,18 @@
 import responseHandler from '../../../responses/index'
-const {sendResponse, sendError} = responseHandler
-import db from '../../../services/db'
-import { PutCommand } from '@aws-sdk/lib-dynamodb'
 import middy from '@middy/core'
 import { v4 as uuid } from 'uuid'
+import db from '../../../services/db'
+import { PutCommand } from '@aws-sdk/lib-dynamodb'
 import jsonBodyParser from '@middy/http-json-body-parser'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
-import {transpileSchema} from '@middy/validator/transpile'
+import { transpileSchema } from '@middy/validator/transpile'
 import hash from '../../../middleware/hash'
-const {hashPassword} = hash
 import getUserByUsername from '../../../middleware/checkUsername'
 
+const {sendResponse, sendError} = responseHandler
+const {hashPassword} = hash
 const TABLE_NAME = 'UsersTable'
-
- // GLÖM INTE SÖKNING ANVÄNDARNAMN INNAN ID FINSN
-  // GlobalSecondaryIndexes:
-  // - IndexName: UsernameIndex
-  //   KeySchema:
-  //     - AttributeName: username
-  //       KeyType: HASH
-  //   Projection:
-  //     ProjectionType: ALL
 
 const createUserHandler = async (event, context) => {
   const userId = uuid()
@@ -31,7 +22,6 @@ const createUserHandler = async (event, context) => {
   //Check if username already exist in database
   const isUsernameTaken = await getUserByUsername(username)
   if(isUsernameTaken) return sendError(400, "Username already taken")
-    console.log(isUsernameTaken);
     
   try {
     //Hash password
@@ -45,10 +35,10 @@ const createUserHandler = async (event, context) => {
         username: username,
         password: hashedPassword,
         email: email,
-        role: "customer"
+        role: "customer",
+        tokens: []
       },
     }
-    console.log('params: ', params);
     
     //Send request to database
     await db.send(new PutCommand(params))
