@@ -24,8 +24,9 @@ export const handler = async (event) => {
     const result = await db.send(new QueryCommand(queryParams));
 
     return sendResponse({
+      message: "Order items fetched successfully.",
       orderId,
-      items: result.Items,
+      "Order details": result.Items,
     });
   } catch (error) {
     console.error("Error fetching order items:", error);

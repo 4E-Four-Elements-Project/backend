@@ -7,10 +7,10 @@ import db from "../../../services/db";
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body); // Parse incoming body
-    const { menuId, quantity } = body;
+    const { menuId, quantity, price } = body;
 
     // Validate input
-    if (!menuId || !quantity) {
+    if (!menuId || !quantity || !price) {
       return sendError(400, "Invalid input: 'menuId' and 'quantity' are required.");
     }
 
@@ -22,6 +22,8 @@ export const handler = async (event) => {
       cartId,
       menuId,
       quantity,
+      price,
+      createdAt: new Date().toISOString(),
     };
 
     // Save to DynamoDB
