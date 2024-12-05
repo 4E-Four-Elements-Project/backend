@@ -1,6 +1,16 @@
 function sendResponse(data) {
+
+  const cspHeader = 
+  "default-src 'self'; script-src 'self' 'unsafe-inline'; img-src 'self'; style-src 'self'; font-src 'self' https://fonts.googleapis.com; object-src 'none';"
+  //OBS! remove 'unsafe-inline' before production
+  //connect-src: Include self and your API URLs if you’re making API calls.
+
     return {
       statusCode: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Security-Policy-Report-Only":  cspHeader // change to "Content-Security-Policy" for production
+      },
       body: JSON.stringify({
         data,
       }),
@@ -14,6 +24,5 @@ function sendResponse(data) {
     };
   }
   
-  // module.exports = { sendResponse, sendError };
   export default { sendResponse, sendError };
   
