@@ -44,7 +44,7 @@ functions:
     handler: ./functions/Order/GetOrder/index.handler
     events:
       - httpApi:
-          path: /order/get/{cartId}
+          path: /order/get/{orderId}
           method: get
   postOrder:
     handler: ./functions/Order/PostOrder/index.handler
@@ -56,13 +56,13 @@ functions:
     handler: ./functions/Order/PutOrder/index.handler
     events:
       - httpApi:
-          path: /order/put/{cartId}
+          path: /order/put/{orderId}
           method: put
   deleteOrder:
     handler: ./functions/Order/DeleteOrder/index.handler
     events:
       - httpApi:
-          path: /order/delete/{cartId}
+          path: /order/delete/{orderId}
           method: delete
 
 
