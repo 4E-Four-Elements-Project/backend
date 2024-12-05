@@ -7,22 +7,39 @@ const { sendResponse, sendError } = responseHandler;
 export const handler = async (event) => {
   try {
     const cartId = event.pathParameters.cartId;
-    const { menuId, quantity } = JSON.parse(event.body);
+    const { menuId, quantity, price } = JSON.parse(event.body);
 
     if (!cartId || !menuId || quantity === undefined) {
       return sendError(400, "Invalid input: 'cartId', 'menuId', and 'quantity' are required.");
     }
+    if (price === undefined) {
+      return sendError(400, "Invalid input:'price' is required.");
+    }
 
+    let updateExpression = "SET";
+    const expressionAttributeValues = {};
+
+    if (price !== undefined) {
+      updateExpression += " price = :price,";
+      expressionAttributeValues[":price"] = price;
+    }
+
+    if (quantity !== undefined) {
+      updateExpression += " quantity = :quantity,";
+      expressionAttributeValues[":quantity"] = quantity;
+    }
+
+    // Remove trailing comma
+    updateExpression = updateExpression.slice(0, -1);
+    
     const updateParams = {
       TableName: "CartTable",
       Key: {
         cartId,
         menuId,
       },
-      UpdateExpression: "SET quantity = :quantity",
-      ExpressionAttributeValues: {
-        ":quantity": quantity,
-      },
+      UpdateExpression: updateExpression,
+      ExpressionAttributeValues: expressionAttributeValues,
       ConditionExpression: "attribute_exists(cartId) AND attribute_exists(menuId)",
     };
 
