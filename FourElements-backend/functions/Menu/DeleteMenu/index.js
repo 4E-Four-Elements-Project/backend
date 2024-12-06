@@ -2,8 +2,13 @@ import responseHandler from '../../../responses/index';
 const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
 import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
+import middy from "@middy/core";
+import auth from '../../../middleware/auth';
+const { authMiddleware} = auth
+import httpErrorHandler from '@middy/http-error-handler';
+import roles from '../../../services/roles';
 
-export const handler = async (event) => {
+const deleteMenuHandler = async (event) => {
   try {
     const { menuId } = event.pathParameters;
 
@@ -29,6 +34,11 @@ export const handler = async (event) => {
     }
 
     console.error("Error deleting menu item:", error);
-    return sendError(500, error.message || "Error deleting menu item");
+    // return sendError(500, error.message || "Error deleting menu item");
+    return sendError(500, "Error deleting menu item");
   }
 };
+
+module.exports.handler = middy(deleteMenuHandler)
+  .use(authMiddleware(["staff"])) // Only allow staff role
+  .use(httpErrorHandler());
