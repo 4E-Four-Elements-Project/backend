@@ -71,3 +71,9 @@ export const handler = async (event) => {
     return sendError(500, error.message || "Error updating menu item");
   }
 };
+
+
+//LÄGG TILL AUTH MIDDLEWARE SÅ BARA STAFF ELLER CHEF HAR ÅTKOMST
+// module.exports.handler = middy(handler)
+// .use(authMiddleware(["staff", "chef"])) // Only allow staff and chef roles
+// .use(httpErrorHandler());

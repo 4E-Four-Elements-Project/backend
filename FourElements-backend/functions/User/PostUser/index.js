@@ -9,6 +9,7 @@ import validator from '@middy/validator'
 import { transpileSchema } from '@middy/validator/transpile'
 import hash from '../../../middleware/hash'
 import getUserByUsername from '../../../middleware/checkUsername'
+import roles from '../../../middleware/roles'
 
 const {sendResponse, sendError} = responseHandler
 const {hashPassword} = hash
@@ -35,7 +36,7 @@ const createUserHandler = async (event, context) => {
         username: username,
         password: hashedPassword,
         email: email,
-        role: "customer",
+        role: "user",
         tokens: []
       },
     }
