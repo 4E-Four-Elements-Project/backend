@@ -64,7 +64,7 @@ async function loginHandler(event) {
 
         //Update the database
         await db.send(new UpdateCommand(params))
-        return sendResponse("User logged in successfully", {response})
+        return sendResponse(`User logged in successfully, token: ${response.token}`)
     } catch (error) {
         console.error('Error logging in:', error)
         return sendError(500, "Failed to login user")
