@@ -7,10 +7,14 @@ import db from "../../../services/db";
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body); // Parse incoming body
-    const { menuId, quantity, price, cartId, userId, comment } = body;
+    const { menuId, quantity, price, cartId, userId, comment, paymentMethod } = body;
 
-    const orderLocked = false;
-
+    const validMethods = ["MasterCard", "Visa", "AmericanExpress", "Discover", "DinersClub", "JCB"];
+    const selectedPaymentMethod = body.paymentMethod;
+    
+    if (!selectedPaymentMethod || !validMethods.includes(selectedPaymentMethod)) {
+      return sendError(400, "Invalid input: 'paymentMethod' must be a valid payment type.");
+    }
     // Validate input
     if (!menuId || !quantity || !price || !cartId) {
       return sendError(400, "Invalid input: 'menuId' and 'quantity' are required.");
@@ -20,6 +24,13 @@ export const handler = async (event) => {
       return sendError(400, "Invalid input: 'comment' must be 255 characters or fewer.");
     }
 
+    const orderLocked = false;
+
+    // Calculate total price
+    const totalPrice = quantity * price;
+
+
+
     // Generate a new orderId if not provided
     const orderId = body.orderId || uuidv4();
 
@@ -27,13 +38,15 @@ export const handler = async (event) => {
     const orderItem = {
       orderId,
       cartId,
+      paymentMethod: selectedPaymentMethod,
       comment: comment || null,
-      orderLocked,
+      orderLocked: orderLocked,
       userId: userId || "guest",
       quantity,
       price,
       menuId,
       createdAt: new Date().toISOString(),
+      totalPrice: totalPrice,
     };
 
     // Save to DynamoDB

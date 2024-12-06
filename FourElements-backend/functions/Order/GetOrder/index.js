@@ -12,6 +12,7 @@ export const handler = async (event) => {
       return sendError(400, "Invalid input: 'orderId' is required.");
     }
 
+
     // Query all items in the cart
     const queryParams = {
       TableName: "OrderTable",
