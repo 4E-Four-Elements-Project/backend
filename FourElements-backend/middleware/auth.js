@@ -1,10 +1,12 @@
 import roles from "../services/roles";
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = "a1b2c3"; // Use process.env.JWT_SECRET in production
+import responseHandler from '../responses/index'
+const {sendResponse, sendError} = responseHandler
 
-const generateToken = (userId) => {
-  if(!userId) throw new Error("userId is required")
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: "1h" });
+const generateToken = (userId, role) => {
+  if(!userId || !role) throw new Error("userId is required")
+  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "1h" });
 };
 
 const verifyToken = (userId, token) => {
@@ -18,17 +20,20 @@ const verifyToken = (userId, token) => {
 
 const authMiddleware = (allowedRoles = []) => ({
   before: async (request) => {
-    const { Authorization } = request.event.headers || {};
-    const token = Authorization?.replace("Bearer ", "");
-
-    if (!token) {
-      throw new Error("Unauthorized: Token and userId are required.");
-    }
+    const { headers } = request.event || {};
+    const token = headers?.authorization?.replace("Bearer ", "");
+    console.log('Header: ', headers?.authorization);
+    console.log('request', request);
+    console.log('token', token);
+    
+    
+    if (!token) return sendError(401, "Unauthorized: Token and userId are required.");
 
     const decoded = jwt.verify(token, JWT_SECRET);
     const { userId, role } = decoded
+
     if (!allowedRoles.includes(role)) {
-      throw new Error(`Forbidden: Access denied for role ${role}`);
+      return sendError(401, `Forbidden: Access denied for role ${role}`);
     }
 
     // Attach userId to the request for downstream use
@@ -37,5 +42,24 @@ const authMiddleware = (allowedRoles = []) => ({
   },
 });
 
+const guestMiddleWare = () => ({
+  before: async (request) => {
+    console.log('request: ', request);
+    
+    const { Authorization } = request.event.headers || {};
+    if (!Authorization) {
+      request.event.userRole = "guest";
+      return;
+    }
+    console.log('Authorization:', Authorization);
+    
 
-export default { generateToken, verifyToken, authMiddleware };
+    const token = Authorization?.replace("Bearer ", "");
+    const decoded = jwt.verify(token, JWT_SECRET);
+    request.event.authenticatedUserId = decoded.userId;
+    request.event.userRole = decoded.role;
+  },
+});
+
+
+export default { generateToken, verifyToken, authMiddleware, guestMiddleWare };

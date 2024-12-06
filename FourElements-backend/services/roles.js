@@ -1,8 +1,6 @@
-const roles = {
-    guest: ["readMenu", "placeOrder"], // Limited permissions
-    user: ["readMenu", "placeOrder", "getOrderHistory"], // Add order access
-    staff: ["readMenu", "manageMenu", "viewOrders", "manageOrders"], // Manage orders
+export const roles = {
+    guest: ["placeOrder", "viewOrder", "updateOrder", "deleteOrder", ], // Limited permissions
+    user: ["placeOrder", "viewOrder", "updateOrder", "deleteOrder", "viewOrderHistory"], // Add order access
+    staff: ["manageMenu", "viewOrders", "manageOrders", "updateOrderStatus"], // Manage orders
     chef: ["viewOrders", "updateOrderStatus"], // Kitchen-specific tasks
   };
-
-  module.exports = roles;
