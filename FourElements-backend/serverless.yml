@@ -64,6 +64,12 @@ functions:
       - httpApi:
           path: /order/delete/{orderId}
           method: delete
+  getOrders:
+    handler: ./functions/Order/GetOrders/index.handler
+    events:
+      - httpApi:
+          path: /order/get
+          method: get
 
 
 
@@ -206,26 +212,26 @@ functions:
           path: /menuItem/get/{menuItemId}
           method: get
     
-  postMenuItem: 
-    handler: ./functions/MenuItem/PostMenuItem/index.handler
-    events:
-      - httpApi:
-          path: /menuItem/post
-          method: post
+  # postMenuItem: 
+  #   handler: ./functions/MenuItem/PostMenuItem/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /menuItem/post
+  #         method: post
 
-  putMenuItem:
-    handler: ./functions/MenuItem/PutMenuItem/index.handler
-    events:
-      - httpApi:
-          path: /menuItem/put/{menuItemId}
-          method: put
+  # putMenuItem:
+  #   handler: ./functions/MenuItem/PutMenuItem/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /menuItem/put/{menuItemId}
+  #         method: put
 
-  deleteMenuItem:
-    handler: ./functions/MenuItem/DeleteMenuItem/index.handler
-    events:
-      - httpApi:
-          path: /menuItem/delete/{menuItemId}
-          method: delete
+  # deleteMenuItem:
+  #   handler: ./functions/MenuItem/DeleteMenuItem/index.handler
+  #   events:
+  #     - httpApi:
+  #         path: /menuItem/delete/{menuItemId}
+  #         method: delete
   
   # MULTIPLE MENUITEMS
   getMenu:
