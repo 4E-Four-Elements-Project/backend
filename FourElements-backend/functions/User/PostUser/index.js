@@ -9,7 +9,7 @@ import validator from '@middy/validator'
 import { transpileSchema } from '@middy/validator/transpile'
 import hash from '../../../middleware/hash'
 import getUserByUsername from '../../../middleware/checkUsername'
-import roles from '../../../middleware/roles'
+import roles from '../../../services/roles'
 
 const {sendResponse, sendError} = responseHandler
 const {hashPassword} = hash
