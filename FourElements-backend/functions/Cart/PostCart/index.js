@@ -17,6 +17,8 @@ export const handler = async (event) => {
     // Generate a new cartId if not provided
     const cartId = body.cartId || uuidv4();
 
+    const totalPrice = quantity * price;
+
     // Create a new cart item
     const cartItem = {
       cartId,
@@ -24,6 +26,7 @@ export const handler = async (event) => {
       quantity,
       price,
       createdAt: new Date().toISOString(),
+      totalPrice: totalPrice,
     };
 
     // Save to DynamoDB

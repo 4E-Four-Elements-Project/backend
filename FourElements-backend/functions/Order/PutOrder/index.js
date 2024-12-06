@@ -7,14 +7,17 @@ const { sendResponse, sendError } = responseHandler;
 export const handler = async (event) => {
   try {
     const orderId = event.pathParameters.orderId;
-    const { menuId, quantity, price, userId = "guest", comment, orderLocked } = JSON.parse(event.body);
+    const { menuId, quantity, price, userId = "guest", comment, orderLocked, paymentMethod } = JSON.parse(event.body);
 
-    // Validate required fields
+    const validMethods = ["MasterCard", "Visa", "AmericanExpress", "Discover", "DinersClub", "JCB"];
+    if (paymentMethod && !validMethods.includes(paymentMethod)) {
+      return sendError(400, "Invalid input: 'paymentMethod' must be a valid payment type.");
+    }
+
     if (!orderId || !menuId || price === undefined || quantity === undefined) {
       return sendError(400, "Invalid input: 'orderId', 'menuId', 'price', and 'quantity' are required.");
     }
 
-    // Validate quantity and price
     if (typeof quantity !== "number" || quantity <= 0) {
       return sendError(400, "Invalid input: 'quantity' must be a positive number.");
     }
@@ -22,14 +25,19 @@ export const handler = async (event) => {
       return sendError(400, "Invalid input: 'price' must be a positive number.");
     }
 
-    // Initialize UpdateExpression and related variables
+
     let updateExpression = "SET";
-    const expressionAttributeValues = {};
-    const expressionAttributeNames = {}; // Ensure this is initialized
+    const expressionAttributeValues = { ":locked": false };
+    const expressionAttributeNames = {};
 
     if (price !== undefined) {
       updateExpression += " price = :price,";
       expressionAttributeValues[":price"] = price;
+    }
+
+    if (paymentMethod !== undefined) {
+      updateExpression += " paymentMethod = :paymentMethod,";
+      expressionAttributeValues[":paymentMethod"] = paymentMethod;
     }
 
     if (quantity !== undefined) {
@@ -38,9 +46,9 @@ export const handler = async (event) => {
     }
 
     if (comment !== undefined) {
-      updateExpression += " #comment = :comment,"; // Use alias for reserved keyword
+      updateExpression += " #comment = :comment,";
       expressionAttributeValues[":comment"] = comment;
-      expressionAttributeNames["#comment"] = "comment"; // Define the alias
+      expressionAttributeNames["#comment"] = "comment";
     }
 
     if (orderLocked !== undefined) {
@@ -48,28 +56,22 @@ export const handler = async (event) => {
       expressionAttributeValues[":orderLocked"] = orderLocked;
     }
 
-    // Remove trailing comma
     updateExpression = updateExpression.slice(0, -1);
 
-    // Restrict updates if orderLocked is already true
+    // Prepare DynamoDB update parameters
     const updateParams = {
       TableName: "OrderTable",
-      Key: {
-        orderId,
-        userId,
-      },
+      Key: { orderId, userId },
+
       UpdateExpression: updateExpression,
-      ExpressionAttributeValues: {
-        ...expressionAttributeValues,
-        ":locked": false, // Ensure the order is not locked
-      },
-      ExpressionAttributeNames: Object.keys(expressionAttributeNames).length ? expressionAttributeNames : undefined,
+      ExpressionAttributeValues: expressionAttributeValues,
+      ...(Object.keys(expressionAttributeNames).length > 0 && { ExpressionAttributeNames: expressionAttributeNames }),
       ConditionExpression: "attribute_exists(orderId) AND attribute_exists(userId) AND orderLocked = :locked",
     };
 
-    console.log("Updating order with params:", updateParams);
+    console.log("Updating order:", updateParams);
 
-    // Execute update operation
+
     await db.send(new UpdateCommand(updateParams));
 
     return sendResponse({
