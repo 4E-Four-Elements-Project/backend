@@ -59,7 +59,8 @@ async function loginHandler(event) {
         const response = {
             userId: userId,
             username: username,
-            token: token
+            token: token,
+            role: role
         }
 
         //Update the database
