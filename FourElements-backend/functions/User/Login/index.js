@@ -59,6 +59,7 @@ async function loginHandler(event) {
         const response = {
             userId: userId,
             username: username,
+            role: role,
             token: token
         }
 

@@ -1,5 +1,8 @@
+// import { Buffer } from 'buffer';
+// global.Buffer = Buffer;  // Polyfill the global Buffer
+
 import roles from "../services/roles";
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 const JWT_SECRET = "a1b2c3"; // Use process.env.JWT_SECRET in production
 import responseHandler from '../responses/index'
 const {sendResponse, sendError} = responseHandler
@@ -63,3 +66,4 @@ const guestMiddleWare = () => ({
 
 
 export default { generateToken, verifyToken, authMiddleware, guestMiddleWare };
+// module.exports = { generateToken, verifyToken, authMiddleware, guestMiddleWare };
