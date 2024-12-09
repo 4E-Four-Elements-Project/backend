@@ -1,21 +1,43 @@
 import roles from "../services/roles";
-const jwt = require("jsonwebtoken");
+// const jwt = require("jsonwebtoken");
+// import jwt from "jsonwebtoken";
 const JWT_SECRET = "a1b2c3"; // Use process.env.JWT_SECRET in production
 import responseHandler from '../responses/index'
+import {SignJWT, jwtVerify} from 'jose'
 const {sendResponse, sendError} = responseHandler
 
-const generateToken = (userId, role) => {
-  if(!userId || !role) throw new Error("userId is required")
-  return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "1h" });
-};
+// const generateToken = (userId, role) => {
+//   if(!userId || !role) throw new Error("userId is required")
+//   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "1h" });
+// };
+const generateToken = async (userId, role) => {
+  if(!userId || !role) sendError(500, "userId and role are required")
+  const secretKey = new TextEncoder().encode(JWT_SECRET);
+  
+  return await new SignJWT({ userId, role })
+  .setProtectedHeader({ alg: 'HS256' })
+  .setExpirationTime('1h')
+  .sign(secretKey);
+
+}
 
 const verifyToken = (userId, token) => {
-  if(!userId || !token) throw new Error("userId and token are required")
-  return jwt.verify(token, JWT_SECRET, (err, response) => {
-    if (err) return {verified: false, message: "Invalid token"}
-    if (response.userId !== userId) return {verified: false, message: "userId mismatch"}
+  if(!userId || !token) sendError(500, "userId and token are required")
+  
+  const secretKey = new TextEncoder().encode(JWT_SECRET);
+  try {
+    const { payload } = jwtVerify(token, secretKey);
+    if(payload.userId !== userId) sendError(401, "userId mismatch")
     return {verified: true, message: "Token is valid"}
-  });
+  } catch (err) {
+    return {verified: false, message: "Invalid token"}
+  }
+  
+  // return jwt.verify(token, JWT_SECRET, (err, response) => {
+  //   if (err) return {verified: false, message: "Invalid token"}
+  //   if (response.userId !== userId) return {verified: false, message: "userId mismatch"}
+  //   return {verified: true, message: "Token is valid"}
+  // });
 };
 
 const authMiddleware = (allowedRoles = []) => ({
@@ -28,38 +50,80 @@ const authMiddleware = (allowedRoles = []) => ({
     
     
     if (!token) return sendError(401, "Unauthorized: Token and userId are required.");
+    try {
+      const secretKey = new TextEncoder().encode(JWT_SECRET);
+      const { payload } = await jwtVerify(token, secretKey);
 
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const { userId, role } = decoded
+      const { userId, role } = payload;
 
-    if (!allowedRoles.includes(role)) {
-      return sendError(401, `Forbidden: Access denied for role ${role}`);
+      if (!allowedRoles.includes(role)) {
+        return sendError(401, `Forbidden: Access denied for role ${role}`);
+      }
+
+      // Attach userId to the request for downstream use
+      request.event.authenticatedUserId = userId;
+      request.event.userRole = role;
+    } catch (err) {
+      console.error("Token verification error:", err);
+      return sendError(401, "Unauthorized: Invalid token.");
     }
+    // const decoded = jwt.verify(token, JWT_SECRET);
+    // const { userId, role } = decoded
 
-    // Attach userId to the request for downstream use
-    request.event.authenticatedUserId = userId;
-    request.event.userRole = role;
+    // if (!allowedRoles.includes(role)) {
+    //   return sendError(401, `Forbidden: Access denied for role ${role}`);
+    // }
+
+    // // Attach userId to the request for downstream use
+    // request.event.authenticatedUserId = userId;
+    // request.event.userRole = role;
   },
 });
 
 const guestMiddleWare = () => ({
   before: async (request) => {
-    console.log('request: ', request);
-    
+    console.log("request: ", request);
+
     const { Authorization } = request.event.headers || {};
     if (!Authorization) {
       request.event.userRole = "guest";
       return;
     }
-    console.log('Authorization:', Authorization);
-    
+
+    console.log("Authorization:", Authorization);
 
     const token = Authorization?.replace("Bearer ", "");
-    const decoded = jwt.verify(token, JWT_SECRET);
-    request.event.authenticatedUserId = decoded.userId;
-    request.event.userRole = decoded.role;
+    try {
+      const secretKey = new TextEncoder().encode(JWT_SECRET);
+      const { payload } = await jwtVerify(token, secretKey);
+
+      request.event.authenticatedUserId = payload.userId;
+      request.event.userRole = payload.role;
+    } catch (err) {
+      console.error("Token verification error:", err);
+      request.event.userRole = "guest"; // Default to guest on token failure
+    }
   },
 });
+
+// const guestMiddleWare = () => ({
+//   before: async (request) => {
+//     console.log('request: ', request);
+    
+//     const { Authorization } = request.event.headers || {};
+//     if (!Authorization) {
+//       request.event.userRole = "guest";
+//       return;
+//     }
+//     console.log('Authorization:', Authorization);
+    
+
+//     const token = Authorization?.replace("Bearer ", "");
+//     const decoded = jwt.verify(token, JWT_SECRET);
+//     request.event.authenticatedUserId = decoded.userId;
+//     request.event.userRole = decoded.role;
+//   },
+// });
 
 
 export default { generateToken, verifyToken, authMiddleware, guestMiddleWare };

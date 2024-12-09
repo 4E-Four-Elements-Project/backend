@@ -35,8 +35,9 @@ async function loginHandler(event) {
         }
 
         //Generate token valid for 1h
-        const token = generateToken(userId, role)        
+        const token = await generateToken(userId, role)        
         if(!token) return sendError(500, "Failed to generate token")
+        console.log('token:', token);
         
         //Save token in array
         const tokenArray = user?.tokens.L || []
@@ -65,7 +66,7 @@ async function loginHandler(event) {
 
         //Update the database
         await db.send(new UpdateCommand(params))
-        return sendResponse(`User logged in successfully, token: ${response.token}`)
+        return sendResponse(`User logged in successfully, role: ${role}, token: ${response.token}`)
     } catch (error) {
         console.error('Error logging in:', error)
         return sendError(500, "Failed to login user")
@@ -73,6 +74,6 @@ async function loginHandler(event) {
 
 }
 
-module.exports.handler = middy(loginHandler)
+export const handler = middy(loginHandler)
   .use(jsonBodyParser())
   .use(httpErrorHandler())

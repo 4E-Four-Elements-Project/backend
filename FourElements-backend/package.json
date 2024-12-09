@@ -10,7 +10,8 @@
     "@middy/validator": "^6.0.0",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "jose": "^5.9.6",
+    "jsonwebtoken": "^8.5.1",
     "uuid": "^11.0.3"
   },
   "devDependencies": {
