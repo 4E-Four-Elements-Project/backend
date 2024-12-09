@@ -6,6 +6,10 @@ import middy from '@middy/core'
 import httpErrorHandler from '@middy/http-error-handler'
 import validator from '@middy/validator'
 import { transpileSchema } from '@middy/validator/transpile'
+import auth from '../../../middleware/auth';
+const { authMiddleware} = auth
+import roles from '../../../services/roles';
+
 
 
 const postInventoryHandler = async (event) => {
@@ -54,6 +58,7 @@ const schema = {
 
 
 module.exports.handler = middy(postInventoryHandler)
+  .use(authMiddleware(["staff"])) // Only allow staff role
   .use(jsonBodyParser())
   .use(validator({ eventSchema: transpileSchema(schema) }))
   .use(httpErrorHandler());
