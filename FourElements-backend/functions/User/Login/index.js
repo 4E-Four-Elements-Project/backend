@@ -26,6 +26,7 @@ async function loginHandler(event) {
         const user = await getUser(username)
         const userId = user?.userId.S
         const hashedPassword = user?.password?.S
+        const role = user?.role?.S
 
         //Check if input password is a match to hashedpassword in database
         const passwordMatch = await comparePassword(password, hashedPassword)
@@ -34,7 +35,7 @@ async function loginHandler(event) {
         }
 
         //Generate token valid for 1h
-        const token = generateToken(userId)        
+        const token = generateToken(userId, role)        
         if(!token) return sendError(500, "Failed to generate token")
         
         //Save token in array
@@ -63,7 +64,7 @@ async function loginHandler(event) {
 
         //Update the database
         await db.send(new UpdateCommand(params))
-        return sendResponse("User logged in successfully", {response})
+        return sendResponse(`User logged in successfully, token: ${response.token}`)
     } catch (error) {
         console.error('Error logging in:', error)
         return sendError(500, "Failed to login user")
