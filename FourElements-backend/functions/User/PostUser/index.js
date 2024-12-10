@@ -3,17 +3,45 @@ import middy from '@middy/core'
 import { v4 as uuid } from 'uuid'
 import db from '../../../services/db'
 import { PutCommand } from '@aws-sdk/lib-dynamodb'
+import { QueryCommand } from '@aws-sdk/client-dynamodb'
 import jsonBodyParser from '@middy/http-json-body-parser'
-import httpErrorHandler from '@middy/http-error-handler'
-import validator from '@middy/validator'
-import { transpileSchema } from '@middy/validator/transpile'
+import bcrypt from "bcryptjs";
+// import httpErrorHandler from '@middy/http-error-handler'
+// import validator from '@middy/validator'
+// import { transpileSchema } from '@middy/validator/transpile'
 import hash from '../../../middleware/hash'
-import getUserByUsername from '../../../middleware/checkUsername'
+// import getUserByUsername from '../../../middleware/checkUsername.js'
 import roles from '../../../services/roles'
 
 const {sendResponse, sendError} = responseHandler
 const {hashPassword} = hash
 const TABLE_NAME = 'UsersTable'
+
+const getUserByUsername = async (username) => {
+  const params = {
+      TableName: 'UsersTable',
+      IndexName: 'UsernameIndex',
+      KeyConditionExpression: 'username = :username',
+      ExpressionAttributeValues: {
+          ':username': { S: username }
+      }
+  }
+
+  try {
+      const result = await db.send(new QueryCommand(params))
+      console.log('result:', result);
+
+      if (result && result.Items && Array.isArray(result.Items) && result.Items.length > 0) {
+          return true  // Username exists
+      }
+
+      return false
+    
+  } catch (error) {
+      console.error("Error querying DynamoDB:", error)
+      throw new Error("Error querying DynamoDB")
+  }   
+}
 
 const createUserHandler = async (event, context) => {
   const userId = uuid()
@@ -69,7 +97,7 @@ const schema = {
 }
 
 
-module.exports.handler = middy(createUserHandler)
+export const handler = middy(createUserHandler)
   .use(jsonBodyParser())
-  .use(validator({ eventSchema: transpileSchema(schema) }))
-  .use(httpErrorHandler())
+  // .use(validator({ eventSchema: transpileSchema(schema) }))
+  // .use(httpErrorHandler())

@@ -1,8 +1,7 @@
 import db from '../services/db'
 import { QueryCommand } from '@aws-sdk/client-dynamodb'
 
-
-export default getUserByUsername = async (username) => {
+export default async function getUserByUsername (username) {
     const params = {
         TableName: 'UsersTable',
         IndexName: 'UsernameIndex',
@@ -27,3 +26,4 @@ export default getUserByUsername = async (username) => {
         throw new Error("Error querying DynamoDB")
     }   
 }
+

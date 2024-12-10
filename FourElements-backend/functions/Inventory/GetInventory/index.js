@@ -25,6 +25,6 @@ const getInventoryHandler = async (event) => {
   }
 };
 
-module.exports.handler = middy(getInventoryHandler)
+export const handler = middy(getInventoryHandler)
 .use(authMiddleware(["staff"])) // Only allow staff role
 .use(httpErrorHandler());

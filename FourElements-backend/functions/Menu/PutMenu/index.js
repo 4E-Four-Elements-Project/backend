@@ -3,6 +3,7 @@ const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
 import { UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import middy from "@middy/core";
+import jsonBodyParser from '@middy/http-json-body-parser';
 import auth from '../../../middleware/auth';
 const { authMiddleware} = auth
 import httpErrorHandler from '@middy/http-error-handler';
@@ -10,7 +11,7 @@ import roles from '../../../services/roles';
 
 const putMenuHandler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
+    const body = event.body;
     const { menuId, price, category, description, ingredients } = body;
 
     // Validate input
@@ -79,6 +80,7 @@ const putMenuHandler = async (event) => {
 
 
 //LÄGG TILL AUTH MIDDLEWARE SÅ BARA STAFF ELLER CHEF HAR ÅTKOMST
-module.exports.handler = middy(putMenuHandler)
+export const handler = middy(putMenuHandler)
 .use(authMiddleware(["staff"])) // Only allow staff role
+.use(jsonBodyParser())
 .use(httpErrorHandler());
