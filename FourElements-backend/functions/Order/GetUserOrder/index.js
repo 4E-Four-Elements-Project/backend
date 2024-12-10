@@ -1,21 +1,34 @@
-import responseHandler from '../../../responses/index'
-const {sendResponse, sendError} = responseHandler
-import db from "../../../services/db";
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import responseHandler from "../../../responses/index";
+const { sendResponse, sendError } = responseHandler;
+import db from "../../../services/db";
 
-module.exports.handler = async (event) => {
-  console.log("Event received:", event);
-
-  const getOrderParams = {
-    TableName: "OrderTable",
-  };
-
+export const handler = async (event) => {
   try {
-    const { Items } = await db.send(new ScanCommand(getOrderParams));
-    console.log("Retrieved items:", Items); 
-    return sendResponse(Items);
+    const userId = event.pathParameters?.userId; 
+
+    // Validate input
+    if (!userId) {
+      return sendError(400, "Invalid input: 'userId' is required.");
+    }
+
+    const scanParams = {
+      TableName: "OrderTable",
+      FilterExpression: "userId = :userId",
+      ExpressionAttributeValues: {
+        ":userId": userId,
+      },
+    };
+
+    const result = await db.send(new ScanCommand(scanParams));
+
+    return sendResponse({
+      message: "Orders fetched successfully.",
+      userId,
+      orders: result.Items || [], 
+    });
   } catch (error) {
     console.error("Error fetching orders:", error);
-    return sendError(404, error.message || "Error fetching orders");
+    return sendError(500, error.message || "Error fetching orders");
   }
 };

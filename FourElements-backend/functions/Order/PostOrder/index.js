@@ -32,7 +32,6 @@ export const handler = async (event) => {
 
     console.log('Extracted userId from token: ', userId);
     
-    
     const validMethods = ["Pay Online", "Pay on Pickup"];
     const selectedPaymentMethod = paymentMethod;
     
