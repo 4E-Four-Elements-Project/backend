@@ -3,8 +3,8 @@ import db from '../../../services/db'
 import { ScanCommand } from '@aws-sdk/client-dynamodb'
 import middy from '@middy/core'
 import httpErrorHandler from '@middy/http-error-handler'
-import validator from '@middy/validator'
-import { transpileSchema } from '@middy/validator/transpile'
+// import validator from '@middy/validator'
+// import { transpileSchema } from '@middy/validator/transpile'
 
 const { sendResponse, sendError } = responseHandler
 
@@ -41,20 +41,19 @@ const getUserHandler = async (event) => {
   };
 }
 
-const schema = {
-  type: 'object',
-  properties: {
-    pathParameters: {
-      type: 'object',
-      properties: {
-        userId: { type: 'string', minLength: 10 },
-      },
-      required: ['userId'],
-    },
-  },
-}
+// const schema = {
+//   type: 'object',
+//   properties: {
+//     pathParameters: {
+//       type: 'object',
+//       properties: {
+//         userId: { type: 'string', minLength: 10 },
+//       },
+//       required: ['userId'],
+//     },
+//   },
+// }
 
-module.exports.handler = middy(getUserHandler)
-  .use(httpErrorHandler())
-  .use(validator({ eventSchema: transpileSchema(schema) }))
+export const handler = middy(getUserHandler)
+  // .use(validator({ eventSchema: transpileSchema(schema) }))
   .use(httpErrorHandler())

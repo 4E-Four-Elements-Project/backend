@@ -45,6 +45,6 @@ const postMenuHandler = async (event) => {
   }
 };
 
-module.exports.handler = middy(postMenuHandler)
+export const handler = middy(postMenuHandler)
 .use(authMiddleware(["staff"])) // Only allow staff role
 .use(httpErrorHandler());

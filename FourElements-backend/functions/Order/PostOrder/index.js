@@ -3,14 +3,38 @@ import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import responseHandler from "../../../responses/index";
 const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
+import { jwtVerify } from "jose"; // Import jwtVerify
+
+const JWT_SECRET = "a1b2c3"; // Replace with process.env.JWT_SECRET in production
 
 export const handler = async (event) => {
+
   try {
     const body = JSON.parse(event.body); // Parse incoming body
-    const { menuId, quantity, price, cartId, userId, comment, paymentMethod } = body;
+    const { menuId, quantity, price, cartId, comment, paymentMethod } = body;
 
-    const validMethods = ["MasterCard", "Visa", "AmericanExpress", "Discover", "DinersClub", "JCB"];
-    const selectedPaymentMethod = body.paymentMethod;
+    // Extract and verify token
+    let userId;
+
+    const authorizationHeader = event.headers?.authorization;
+    const token = authorizationHeader?.replace("Bearer ", "");
+    const secretKey = new TextEncoder().encode(JWT_SECRET);
+
+    if (token) {
+      try {
+        const { payload } = await jwtVerify(token, secretKey);
+        userId = payload.userId;
+      } catch (err) {
+        console.error("Token verification error:", err);
+        userId = "guest";
+      }
+    }
+
+    console.log('Extracted userId from token: ', userId);
+    
+    
+    const validMethods = ["Pay Online", "Pay on Pickup"];
+    const selectedPaymentMethod = paymentMethod;
     
     if (!selectedPaymentMethod || !validMethods.includes(selectedPaymentMethod)) {
       return sendError(400, "Invalid input: 'paymentMethod' must be a valid payment type.");
@@ -28,8 +52,6 @@ export const handler = async (event) => {
 
     // Calculate total price
     const totalPrice = quantity * price;
-
-
 
     // Generate a new orderId if not provided
     const orderId = body.orderId || uuidv4();
