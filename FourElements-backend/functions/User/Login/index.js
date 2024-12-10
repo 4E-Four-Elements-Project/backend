@@ -53,8 +53,8 @@ async function loginHandler(event) {
         console.log('token:', token);
         
         //Save token in array
-        const tokenArray = user?.tokens.L || []
-        tokenArray.push(token)
+        // const tokenArray = user?.tokens.L || []
+        // tokenArray.push(token)
 
         //Params for database
         const params = {
@@ -64,7 +64,7 @@ async function loginHandler(event) {
             },
             UpdateExpression: "SET tokens = :value",
             ExpressionAttributeValues: {
-                ":value": tokenArray
+                ":value": token
             },
             ReturnValues: "UPDATED_NEW"
         }

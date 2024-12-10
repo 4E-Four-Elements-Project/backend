@@ -2,8 +2,11 @@ import responseHandler from '../../../responses/index'
 const {sendResponse, sendError} = responseHandler
 import db from "../../../services/db";
 import { ScanCommand } from "@aws-sdk/lib-dynamodb";
+import middy from "@middy/core";
+import auth from '../../../middleware/auth';
+const { authMiddleware} = auth
 
-module.exports.handler = async (event) => {
+const getOrdersHandler = async (event) => {
   console.log("Event received:", event);
 
   const getOrderParams = {
@@ -19,3 +22,6 @@ module.exports.handler = async (event) => {
     return sendError(404, error.message || "Error fetching orders");
   }
 };
+
+export const handler = middy(getOrdersHandler)
+  .use(authMiddleware(["staff"])) // Only allow staff role
