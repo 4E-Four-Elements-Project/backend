@@ -6,6 +6,12 @@ import db from "../../../services/db";
 import { jwtVerify } from "jose"; // Import jwtVerify
 
 const JWT_SECRET = "a1b2c3"; // Replace with process.env.JWT_SECRET in production
+const generateShortUUID = () => {
+  const uuid = uuidv4();
+  // Convert the UUID to a buffer, then encode it as base64 and remove padding
+  const encodedUUID = Buffer.from(uuid.replace(/-/g, ''), 'hex').toString('base64').replace(/=+$/, '');
+  return encodedUUID;
+};
 
 export const handler = async (event) => {
 
@@ -13,7 +19,7 @@ export const handler = async (event) => {
     const body = JSON.parse(event.body); // Parse incoming body
     const { menuId, quantity, price, cartId, comment, paymentMethod } = body;
 
-    // Extract and verify token
+    // Extract userId from token
     let userId;
 
     const authorizationHeader = event.headers?.authorization;
@@ -53,7 +59,7 @@ export const handler = async (event) => {
     const totalPrice = quantity * price;
 
     // Generate a new orderId if not provided
-    const orderId = body.orderId || uuidv4();
+    const orderId = body.orderId || generateShortUUID();
 
     // Create a new order item
     const orderItem = {
