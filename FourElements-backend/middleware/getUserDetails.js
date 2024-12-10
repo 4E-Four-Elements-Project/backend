@@ -3,7 +3,7 @@ const {sendError} = responseHandler
 import db from '../services/db'
 import { QueryCommand } from '@aws-sdk/client-dynamodb'
 
-export default getUser = async (username) => {
+const getUser = async (username) => {
 
     //Save params for database query
     const params = {
@@ -32,3 +32,5 @@ export default getUser = async (username) => {
         sendError(500, "Error querying DynamoDB")
     }   
 }
+
+export default getUser

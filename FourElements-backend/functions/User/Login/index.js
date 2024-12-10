@@ -15,6 +15,7 @@ const { generateToken } = auth;
 async function loginHandler(event) {
 
     const {username, password} = event.body;
+    console.log(username, password);
     
     //Check that the required parameters is in body
     if (!username || !password) {
@@ -24,9 +25,21 @@ async function loginHandler(event) {
     try {
         //Check if user exist in database and save user details
         const user = await getUser(username)
-        const userId = user?.userId.S
+        console.log('User object: ', user);
+        if(!user) return sendError(404, "User not found")
+        const userId = user?.userId?.S
+        if(!userId) return sendError(404, "User ID not found")
         const hashedPassword = user?.password?.S
+    if(!hashedPassword) return sendError(404, "User password not found")
         const role = user?.role?.S
+    if(!role) return sendError(404, "User role not found")
+        
+        if(!userId || !hashedPassword || !role) {
+            return sendError(404, "User data is incomplete")
+        }
+
+        
+        
 
         //Check if input password is a match to hashedpassword in database
         const passwordMatch = await comparePassword(password, hashedPassword)
@@ -35,8 +48,9 @@ async function loginHandler(event) {
         }
 
         //Generate token valid for 1h
-        const token = generateToken(userId, role)        
+        const token = await generateToken(userId, role)        
         if(!token) return sendError(500, "Failed to generate token")
+        console.log('token:', token);
         
         //Save token in array
         const tokenArray = user?.tokens.L || []
@@ -59,12 +73,13 @@ async function loginHandler(event) {
         const response = {
             userId: userId,
             username: username,
-            token: token
+            token: token,
+            role: role
         }
 
         //Update the database
         await db.send(new UpdateCommand(params))
-        return sendResponse(`User logged in successfully, token: ${response.token}`)
+        return sendResponse(`User logged in successfully, role: ${response.role}, token: ${response.token}`)
     } catch (error) {
         console.error('Error logging in:', error)
         return sendError(500, "Failed to login user")
@@ -72,6 +87,6 @@ async function loginHandler(event) {
 
 }
 
-module.exports.handler = middy(loginHandler)
+export const handler = middy(loginHandler)
   .use(jsonBodyParser())
   .use(httpErrorHandler())

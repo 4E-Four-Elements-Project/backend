@@ -1,16 +1,19 @@
 {
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.699.0",
+    "@aws-sdk/client-dynamodb": "^3.705.0",
     "@aws-sdk/client-s3": "^3.699.0",
     "@aws-sdk/lib-dynamodb": "^3.705.0",
     "@middy/core": "^6.0.0",
     "@middy/http-error-handler": "^6.0.0",
     "@middy/http-json-body-parser": "^6.0.0",
     "@middy/validator": "^6.0.0",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
+    "jose": "^5.9.6",
+    "jsonwebtoken": "^8.5.1",
     "uuid": "^11.0.3"
   },
   "devDependencies": {

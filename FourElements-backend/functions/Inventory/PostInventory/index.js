@@ -3,18 +3,15 @@ const {sendResponse, sendError} = responseHandler
 import db from "../../../services/db";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import middy from '@middy/core'
-import httpErrorHandler from '@middy/http-error-handler'
-import validator from '@middy/validator'
-import { transpileSchema } from '@middy/validator/transpile'
+import jsonBodyParser from "@middy/http-json-body-parser";
 import auth from '../../../middleware/auth';
 const { authMiddleware} = auth
 import roles from '../../../services/roles';
 
 
-
 const postInventoryHandler = async (event) => {
   try {
-    const body = JSON.parse(event.body);
+    const body = event.body;
     const { item, quantity = 0 } = body;
 
     const addItemParams = {
@@ -56,11 +53,8 @@ const schema = {
 };
 
 
-
-module.exports.handler = middy(postInventoryHandler)
+export const handler = middy(postInventoryHandler)
   .use(authMiddleware(["staff"])) // Only allow staff role
   .use(jsonBodyParser())
-  .use(validator({ eventSchema: transpileSchema(schema) }))
-  .use(httpErrorHandler());
 
   

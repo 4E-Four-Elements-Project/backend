@@ -71,7 +71,12 @@ functions:
           path: /order/get
           method: get
 
-
+  getUserOrder:
+    handler: ./functions/Order/GetUserOrder/index.handler
+    events:
+      - httpApi:
+          path: /order/get/user/{userId}
+          method: get
 
   # MULTIPLE CARTITEMS
   getCart:
@@ -86,12 +91,6 @@ functions:
       - httpApi:
           path: /cart/post
           method: post
-  deleteCart:
-    handler: ./functions/Cart/DeleteCart/index.handler
-    events:
-      - httpApi:
-          path: /cart/delete/{cartId}
-          method: delete
   putCart:
     handler: ./functions/Cart/PutCart/index.handler
     events:
@@ -100,59 +99,13 @@ functions:
           method: put
   
   # SINGLE CARTITEM
-  getCartItem:
-    handler: ./functions/Cart/GetCartItem/index.handler
-    events:
-      - httpApi:
-          path: /cartItem/get/{cartItemId}
-          method: get
-  postCartItem:
-    handler: ./functions/Cart/PostCartItem/index.handler
-    events:
-      - httpApi:
-          path: /cartItem/post
-          method: post
   deleteCartItem:
     handler: ./functions/Cart/DeleteCartItem/index.handler
     events:
       - httpApi:
           path: /cartItem/remove/{cartId}
           method: delete
-  putCartItem:
-    handler: ./functions/Cart/PutCartItem/index.handler
-    events:
-      - httpApi:
-          path: /cartItem/put/{cartItemId}
-          method: put
 
-  # MULTIPLE USERS
-  # getUsers:
-  #   handler: ./functions/Users/GetUsers/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /users/get
-  #         method: get
-
-  # deleteUsers:
-  #   handler: ./functions/Users/DeleteUsers/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /users/delete
-  #         method: delete
-  
-  # postUsers:
-  #   handler: ./functions/Users/PostUsers/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /users/post
-  #         method: post
-  
-  # putUsers:
-  #   handler: ./functions/Users/PutUsers/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /users/put
-  #         method: put
 
   # SINGLE USER
   postUser:
@@ -176,13 +129,6 @@ functions:
             path: /user/delete/{userId}
             method: delete
 
-  putUser:
-    handler: ./functions/User/PutUser/index.handler
-    events:
-      - httpApi:
-          path: /user/put/{userId}
-          method: put
-
   login:
     handler: ./functions/User/Login/index.handler
     events:
@@ -203,35 +149,6 @@ functions:
       - httpApi:
           path: /user/verify
           method: post
-
-  # SINGLE MENUITEM
-  getMenuItem:
-    handler: ./functions/MenuItem/GetMenuItem/index.handler
-    events:
-      - httpApi:
-          path: /menuItem/get/{menuItemId}
-          method: get
-    
-  # postMenuItem: 
-  #   handler: ./functions/MenuItem/PostMenuItem/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /menuItem/post
-  #         method: post
-
-  # putMenuItem:
-  #   handler: ./functions/MenuItem/PutMenuItem/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /menuItem/put/{menuItemId}
-  #         method: put
-
-  # deleteMenuItem:
-  #   handler: ./functions/MenuItem/DeleteMenuItem/index.handler
-  #   events:
-  #     - httpApi:
-  #         path: /menuItem/delete/{menuItemId}
-  #         method: delete
   
   # MULTIPLE MENUITEMS
   getMenu:
@@ -262,34 +179,6 @@ functions:
           path: /menu/delete/{menuId}
           method: delete
 
-  # SINGLE INVENTORY ITEM
-  getInventoryItem:
-    handler: ./functions/InventoryItem/GetInventoryItem/index.handler
-    events:
-      - httpApi:
-          path: /inventoryItem/get/{itemId}
-          method: get
-
-  postInventoryItem:
-    handler: ./functions/InventoryItem/PostInventoryItem/index.handler
-    events: 
-      - httpApi:
-          path: /inventoryItem/post
-          method: post
-        
-  putInventoryItem:
-    handler: ./functions/InventoryItem/PutInventoryItem/index.handler
-    events: 
-      - httpApi:
-          path: /inventoryItem/put/{itemId}
-          method: put
-
-  deleteInventoryItem:
-    handler: ./functions/InventoryItem/DeleteItem/index.handler
-    events:
-      - httpApi:
-          path: /inventoryItem/delete/{itemId}
-          method: delete
 
     # Multiple Inventory
   getInventory:
