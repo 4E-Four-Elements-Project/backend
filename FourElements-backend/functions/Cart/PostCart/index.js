@@ -7,7 +7,7 @@ import db from "../../../services/db";
 export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body); // Parse incoming body
-    const { menuId, quantity, price } = body;
+    const { menuId, price } = body;
 
     // Validate input
     if (!menuId || !quantity || !price) {
@@ -17,16 +17,12 @@ export const handler = async (event) => {
     // Generate a new cartId if not provided
     const cartId = body.cartId || uuidv4();
 
-    const totalPrice = quantity * price;
-
     // Create a new cart item
     const cartItem = {
       cartId,
       menuId,
-      quantity,
       price,
       createdAt: new Date().toISOString(),
-      totalPrice: totalPrice,
     };
 
     // Save to DynamoDB
@@ -38,7 +34,7 @@ export const handler = async (event) => {
     await db.send(new PutCommand(params));
 
     return sendResponse({
-      message: "Cart item added successfully.",
+      message: `${menuId} added successfully to cart`,
       cartItem,
     });
   } catch (error) {

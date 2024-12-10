@@ -6,7 +6,7 @@ import middy from "@middy/core";
 import jsonBodyParser from '@middy/http-json-body-parser';
 import auth from '../../../middleware/auth';
 const { authMiddleware} = auth
-import httpErrorHandler from '@middy/http-error-handler';
+// import httpErrorHandler from '@middy/http-error-handler';
 import roles from '../../../services/roles';
 
 const putMenuHandler = async (event) => {
@@ -83,4 +83,4 @@ const putMenuHandler = async (event) => {
 export const handler = middy(putMenuHandler)
 .use(authMiddleware(["staff"])) // Only allow staff role
 .use(jsonBodyParser())
-.use(httpErrorHandler());
+// .use(httpErrorHandler());
