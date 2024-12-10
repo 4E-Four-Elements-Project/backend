@@ -9,7 +9,7 @@ export const handler = async (event) => {
     const body = JSON.parse(event.body); // Parse incoming body
     const { menuId, quantity, price, cartId, userId, comment, paymentMethod } = body;
 
-    const validMethods = ["MasterCard", "Visa", "AmericanExpress", "Discover", "DinersClub", "JCB"];
+    const validMethods = ["Pay Online", "Pay on Pickup"];
     const selectedPaymentMethod = body.paymentMethod;
     
     if (!selectedPaymentMethod || !validMethods.includes(selectedPaymentMethod)) {

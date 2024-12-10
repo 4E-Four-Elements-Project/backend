@@ -9,7 +9,7 @@ export const handler = async (event) => {
     const orderId = event.pathParameters.orderId;
     const { menuId, quantity, price, userId = "guest", comment, orderLocked, paymentMethod } = JSON.parse(event.body);
 
-    const validMethods = ["MasterCard", "Visa", "AmericanExpress", "Discover", "DinersClub", "JCB"];
+    const validMethods = ["Pay Online", "Pay on Pickup"];
     if (paymentMethod && !validMethods.includes(paymentMethod)) {
       return sendError(400, "Invalid input: 'paymentMethod' must be a valid payment type.");
     }
