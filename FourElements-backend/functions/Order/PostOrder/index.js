@@ -48,7 +48,7 @@ export const handler = async (event) => {
     if (!menuId || !quantity || !price || !cartId) {
       return sendError(400, "Invalid input: 'menuId' and 'quantity' are required.");
     }
-
+    //KOLLA OM DEN ÄR OBLIGATORISK GÅR ATT 
     if (comment && comment.length > 255) {
       return sendError(400, "Invalid input: 'comment' must be 255 characters or fewer.");
     }
@@ -68,6 +68,7 @@ export const handler = async (event) => {
       paymentMethod: selectedPaymentMethod,
       comment: comment || null,
       orderLocked: orderLocked,
+      status: "pending", //cooking//done
       userId: userId || "guest",
       quantity,
       price,

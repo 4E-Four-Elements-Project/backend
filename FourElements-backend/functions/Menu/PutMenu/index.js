@@ -13,7 +13,8 @@ const putMenuHandler = async (event) => {
   try {
     const body = event.body;
     const { menuId, price, category, description, ingredients } = body;
-
+    console.log(body);
+    
     // Validate input
     if (!menuId) {
       return sendError(400, "Invalid input: 'menuId' is required.");
@@ -62,7 +63,8 @@ const putMenuHandler = async (event) => {
     };
 
     const result = await db.send(new UpdateCommand(updateParams));
-
+    console.log('result: ', result);
+    
     return sendResponse({
       message: `Menu item '${menuId}' updated successfully.`,
       updatedAttributes: result.Attributes,

@@ -1,20 +1,35 @@
 import responseHandler from '../../../responses/index';
 const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
-import { DeleteCommand } from "@aws-sdk/lib-dynamodb";
-import { GetCommand } from "@aws-sdk/lib-dynamodb";
+import { DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 
 export const handler = async (event) => {
   try {
     const { orderId } = event.pathParameters;
-    const { userId } = JSON.parse(event.body || "{}");
+    // const { userId } = JSON.parse(event.body || "{}");
 
-    if (!orderId || !userId) {
-      return sendError(400, "Invalid input: 'orderId' and 'userId' is required.");
+    if (!orderId) {
+      return sendError(400, "Invalid input: 'orderId' is required.");
     }
 
-   
+    //Query the order to get the userId
+    const orderQueryParams = {
+      TableName: "OrderTable",
+      KeyConditionExpression: "orderId = :orderId",
+      ExpressionAttributeValues: {
+        ":orderId": orderId,
+      },
+    };
+
+    const queryResult = await db.send(new QueryCommand(orderQueryParams));
+    const item = queryResult.Items?.[0];
+
+    if(!item) {
+      return sendError(404, `Order with orderId '${orderId}' does not exist.`);
+    }
+
+    const {userId} = item
     // const key = { orderId };
     // if (userId) {
     //   key.userId = userId;       
