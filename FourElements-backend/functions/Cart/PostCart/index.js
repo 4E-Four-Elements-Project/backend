@@ -44,6 +44,9 @@ export const handler = async (event) => {
       userId = "guest";
     }
 
+    console.log('userId', userId);
+    
+
      // Check if the user already has items in the cart
      const existingCartParams = {
       TableName: "CartTable",
