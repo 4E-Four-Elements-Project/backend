@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'; // Import uuid library
-import { PutCommand, GetCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import responseHandler from "../../../responses/index";
 const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
@@ -17,6 +17,7 @@ export const handler = async (event) => {
       return sendError(400, "Invalid input: 'menuId' and 'price' are required.");
     }
 
+
     //Check if menuItem exist in menu
     const menuParams = {
       TableName: "MenuTable",
@@ -27,6 +28,8 @@ export const handler = async (event) => {
     if (!menuResult.Item) {
       return sendError(404, `Menu item with menuId '${menuId}' not found.`);
     }
+
+    const menuItem = menuResult.Item;
 
     // Extract userId from token if present
     let userId;
@@ -43,7 +46,49 @@ export const handler = async (event) => {
 
     let cartId = uuidv4()
 
-    // Create a new cart item
+    //Check inventory availability
+    for (const ingredient of menuItem.ingredients) {
+      const inventoryParams = {
+        TableName: "InventoryTable",
+        Key: { inventoryId: ingredient },
+      };
+
+      const inventoryResult = await db.send(new GetCommand(inventoryParams));
+      if (!inventoryResult.Item || inventoryResult.Item.quantity <= 0) {
+        return sendError(404, `Insufficient inventory for ingredient: ${ingredient}`);
+      }
+
+      const inventoryItem = inventoryResult.Item;
+
+      if (inventoryItem.quantity < ingredient.quantity) {
+        return sendError(400, `Insufficient quantity for ingredient '${ingredient.ingredientId}'.`);
+      }
+    }
+
+    // Deduct ingredients from inventory
+    for (const ingredient of menuItem.ingredients) {
+      const inventoryParams = {
+        TableName: "InventoryTable",
+        Key: { inventoryId: ingredient },
+        UpdateExpression: "SET quantity = quantity - :decrement",
+        ExpressionAttributeValues: {
+          ":decrement": 1, // Adjust as per recipe requirements
+        },
+        ConditionExpression: "quantity >= :decrement", // Ensure sufficient stock
+        ReturnValues: "UPDATED_NEW",
+      };
+
+      try {
+        await db.send(new UpdateCommand(inventoryParams));
+      } catch (error) {
+        if (error.name === "ConditionalCheckFailedException") {
+          return sendError(400, `Insufficient inventory for ingredient: ${ingredient}`);
+        }
+        throw error;
+      }
+    }
+
+    //Add to cart
     const cartItem = {
       cartId,
       userId,
