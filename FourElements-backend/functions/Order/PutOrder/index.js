@@ -5,6 +5,9 @@ import db from "../../../services/db.js";
 const { sendResponse, sendError } = responseHandler;
 
 export const handler = async (event) => {
+
+  //Lägg till att den ska kolla vilken status det är, om status är "kitchen"
+  //ska endast staff kunna göra ändringar
   try {
     const orderId = event.pathParameters.orderId;
     console.log(event);

@@ -5,6 +5,9 @@ import { DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 
 export const handler = async (event) => {
+
+  //Även här måste man kolla vilken status den har, om det är kitchen kan 
+  //man inte deleta
   try {
     console.log(event.body);
     const orderId = JSON.parse(event.body).orderId;

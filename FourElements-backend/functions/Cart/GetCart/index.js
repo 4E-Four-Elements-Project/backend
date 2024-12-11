@@ -4,6 +4,7 @@ const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
 import { jwtVerify } from "jose"; // Import jwtVerify
 const JWT_SECRET = "a1b2c3"; // Replace with process.env.JWT_SECRET in production
+import { v4 as uuidv4 } from "uuid";
 
 export const handler = async (event) => {
   try {
@@ -20,21 +21,10 @@ export const handler = async (event) => {
       userId = "guest";
     }
 
-    // const cartId = event.pathParameters.cartId;
-
-    // Validate input
-    // if (!cartId) {
-    //   return sendError(400, "Invalid input: 'cartId' is required.");
-    // }
-
-    // Validate userId
-    if (!userId) {
-      return sendError(400, "User is not authenticated.");
-    }
-
     // Query all items in the cart
     const queryParams = {
       TableName: "CartTable",
+      IndexName: "userId-cartId-index", 
       KeyConditionExpression: "userId = :userId",
       ExpressionAttributeValues: {
         ":userId": userId,
@@ -47,71 +37,34 @@ export const handler = async (event) => {
       return sendError(404, "No items found in the cart.");
     }
 
-    // Initialize variables for the response
-    let totalPrice = 0;
+    // Aggregate menuIds and calculate total price
     const groupedItems = {};
+    let totalPrice = 0;
 
-    // Loop through each cart item and aggregate the data
-    result.Items.forEach(item => {
+    result.Items.forEach((item) => {
       const { menuId, price } = item;
 
-      // Initialize the item if not already grouped
       if (!groupedItems[menuId]) {
-        groupedItems[menuId] = { quantity: 0, price: price };
+        groupedItems[menuId] = { quantity: 0, price };
       }
 
-      // Increment the quantity for the menu item
       groupedItems[menuId].quantity += 1;
-
-      // Add to the total price
       totalPrice += price;
     });
 
-    const newCartId = uuidv4();
-
-    // Prepare new cart items to insert into the CartTable
-    const newCartItems = Object.entries(groupedItems).map(([menuId, item]) => ({
-      cartId: newCartId,
-      userId,
+     // Format response
+     const aggregatedItems = Object.entries(groupedItems).map(([menuId, details]) => ({
       menuId,
-      quantity: item.quantity,
-      price: item.price,
-      createdAt: new Date().toISOString(),
+      quantity: details.quantity,
+      price: details.price,
     }));
 
-    // Insert the new cart items into CartTable
-    const batchWriteParams = {
-      RequestItems: {
-        CartTable: newCartItems.map(cartItem => ({
-          PutRequest: {
-            Item: cartItem,
-          },
-        })),
-      },
-    };
-
-    // Perform batch write to insert all new cart items
-    await db.send(new PutCommand(batchWriteParams));
-
-    // Return the response
     return sendResponse({
-      cartId: newCartId,
+      userId,
       totalPrice,
-      data: groupedItems,
+      items: aggregatedItems,
     });
 
-    // Prepare the final response
-    // const responseData = {
-    //   cartId,
-    //   totalPrice,
-    //   data: groupedItems,
-    // };
-    // return sendResponse(responseData);
-
-    // return sendResponse({
-    //   cartId,
-    //   items: result.Items,
-    // });
   } catch (error) {
     console.error("Error fetching cart items:", error);
     return sendError(500, error.message || "Error fetching cart items");

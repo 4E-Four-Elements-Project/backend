@@ -17,7 +17,6 @@ export const handler = async (event) => {
       return sendError(400, "Invalid input: 'menuId' and 'price' are required.");
     }
 
-
     //Check if menuItem exist in menu
     const menuParams = {
       TableName: "MenuTable",
@@ -31,145 +30,83 @@ export const handler = async (event) => {
 
     const menuItem = menuResult.Item;
 
-    // Extract userId from token if present
-    let userId;
-
-    if(event.headers?.authorization){
-      const authorizationHeader = event.headers.authorization;
-      const token = authorizationHeader.replace("Bearer ", "");
-      const secretKey = new TextEncoder().encode(JWT_SECRET);
-      const { payload } = await jwtVerify(token, secretKey);
-      userId = payload.userId;
-    } else {
-      userId = "guest";
-    }
-
-    console.log('userId', userId);
-    
-
-     // Check if the user already has items in the cart
-     const existingCartParams = {
-      TableName: "CartTable",
-      IndexName: "userId-cartId-index",
-      KeyConditionExpression: "userId = :userId",
-      ExpressionAttributeValues: {
-        ":userId": userId,
-      },
-    };
-
-    const existingCartResult = await db.send(new QueryCommand(existingCartParams));
-
-    let cartId;
-    let totalPrice = 0;
-
-    if (existingCartResult.Items.length > 0) {
-      // User has existing cart, retrieve the cartId and calculate total price
-      cartId = existingCartResult.Items[0].cartId;
-      totalPrice = existingCartResult.Items.reduce((sum, item) => sum + item.price, 0);
-      
-      // Update the cart item with new menuId and price
-      const updateCartItemParams = {
-        TableName: "CartTable",
-        Key: { cartId, menuId },
-        UpdateExpression: "SET price = :price, updatedAt = :updatedAt",
-        ExpressionAttributeValues: {
-          ":price": price,
-          ":updatedAt": new Date().toISOString(),
-        },
-      };
-      await db.send(new UpdateCommand(updateCartItemParams));
-    
-    } else {
-      // No existing cart, generate a new cartId
-      cartId = uuidv4();
-    }
-
-    //Check inventory availability
-    for (const ingredient of menuItem.ingredients) {
-      const inventoryParams = {
-        TableName: "InventoryTable",
-        Key: { inventoryId: ingredient },
-      };
-
-      const inventoryResult = await db.send(new GetCommand(inventoryParams));
-      if (!inventoryResult.Item || inventoryResult.Item.quantity <= 0) {
-        return sendError(404, `Insufficient inventory for ingredient: ${ingredient}`);
-      }
-
-      const inventoryItem = inventoryResult.Item;
-
-      if (inventoryItem.quantity < ingredient.quantity) {
-        return sendError(400, `Insufficient quantity for ingredient '${ingredient.ingredientId}'.`);
-      }
-    }
-
-    // Deduct ingredients from inventory
-    for (const ingredient of menuItem.ingredients) {
-      const inventoryParams = {
-        TableName: "InventoryTable",
-        Key: { inventoryId: ingredient },
-        UpdateExpression: "SET quantity = quantity - :decrement",
-        ExpressionAttributeValues: {
-          ":decrement": 1, // Adjust as per recipe requirements
-        },
-        ConditionExpression: "quantity >= :decrement", // Ensure sufficient stock
-        ReturnValues: "UPDATED_NEW",
-      };
-
-      try {
-        await db.send(new UpdateCommand(inventoryParams));
-      } catch (error) {
-        if (error.name === "ConditionalCheckFailedException") {
-          return sendError(400, `Insufficient inventory for ingredient: ${ingredient}`);
+       //Check inventory availability
+       for (const ingredient of menuItem.ingredients) {
+        const inventoryParams = {
+          TableName: "InventoryTable",
+          Key: { inventoryId: ingredient },
+        };
+  
+        const inventoryResult = await db.send(new GetCommand(inventoryParams));
+        if (!inventoryResult.Item || inventoryResult.Item.quantity <= 0) {
+          return sendError(404, `Insufficient inventory for ingredient: ${ingredient}`);
         }
-        throw error;
+  
+        const inventoryItem = inventoryResult.Item;
+  
+        if (inventoryItem.quantity < ingredient.quantity) {
+          return sendError(400, `Insufficient quantity for ingredient '${ingredient.ingredientId}'.`);
+        }
       }
-    }
+  
+      // Deduct ingredients from inventory
+      for (const ingredient of menuItem.ingredients) {
+        const inventoryParams = {
+          TableName: "InventoryTable",
+          Key: { inventoryId: ingredient },
+          UpdateExpression: "SET quantity = quantity - :decrement",
+          ExpressionAttributeValues: {
+            ":decrement": 1, // Adjust as per recipe requirements
+          },
+          ConditionExpression: "quantity >= :decrement", // Ensure sufficient stock
+          ReturnValues: "UPDATED_NEW",
+        };
+  
+        try {
+          await db.send(new UpdateCommand(inventoryParams));
+        } catch (error) {
+          if (error.name === "ConditionalCheckFailedException") {
+            return sendError(400, `Insufficient inventory for ingredient: ${ingredient}`);
+          }
+          throw error;
+        }
+      }
+      // Extract userId from token if present
+      let userId = "guest"
 
-    //Add new cart item
-    const cartItem = {
-      cartId,
-      userId,
-      menuId,
-      price,
-      createdAt: new Date().toISOString(),
+      if(event.headers?.authorization){
+        const authorizationHeader = event.headers.authorization;
+        const token = authorizationHeader.replace("Bearer ", "");
+        const secretKey = new TextEncoder().encode(JWT_SECRET);
+        const { payload } = await jwtVerify(token, secretKey);
+        userId = payload.userId;
+      } 
+      console.log('userId', userId);
+    
+      // Add the item to the CartTable
+      const cartId = uuidv4(); // Generate a unique cart ID
+      const newCartItem = {
+        cartId,
+        menuId,
+        userId,
+        price,
+        createdAt: new Date().toISOString(),
+      };  
+
+      const createCartParams = {
+        TableName: "CartTable",
+        Item: newCartItem,
+      };
+
+      await db.send(new PutCommand(createCartParams));
+
+      return sendResponse({
+        message: `${menuId} added to cart successfully.`,
+        cartItem: newCartItem,
+      });
+
+    } catch (error) {
+        console.error("Error adding to cart:", error);
+        return sendError(500, error.message || "Error adding to cart.");
+      }
     };
-
-    // Save to DynamoDB (only if cart item is new)
-    if (existingCartResult.Items.length === 0) {
-      const params = {
-        TableName: "CartTable",
-        Item: cartItem,
-      };
-
-      await db.send(new PutCommand(params));
-    }
-
-    // Update total price if the user already has a cart
-    if (existingCartResult.Items.length > 0) {
-      totalPrice += price;
-
-      const updateTotalPriceParams = {
-        TableName: "CartTable",
-        Key: {
-          cartId, // Partition key is cartId
-          menuId, // Sort key is menuId
-        },
-        UpdateExpression: "SET totalPrice = :totalPrice",
-        ExpressionAttributeValues: {
-          ":totalPrice": totalPrice,
-        },
-      };
-
-      await db.send(new UpdateCommand(updateTotalPriceParams));
-    }
-
-    return sendResponse({
-      message: `${menuId} added successfully to cart`,
-      cartItem,
-    });
-  } catch (error) {
-    console.error("Error adding cart item:", error);
-    return sendError(500, error.message || "Error adding cart item.");
-  }
-};
