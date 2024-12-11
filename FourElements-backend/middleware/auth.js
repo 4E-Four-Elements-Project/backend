@@ -1,15 +1,9 @@
 import roles from "../services/roles";
-// const jwt = require("jsonwebtoken");
-// import jwt from "jsonwebtoken";
 const JWT_SECRET = "a1b2c3"; // Use process.env.JWT_SECRET in production
 import responseHandler from '../responses/index'
 import {SignJWT, jwtVerify} from 'jose'
 const {sendResponse, sendError} = responseHandler
 
-// const generateToken = (userId, role) => {
-//   if(!userId || !role) throw new Error("userId is required")
-//   return jwt.sign({ userId, role }, JWT_SECRET, { expiresIn: "1h" });
-// };
 const generateToken = async (userId, role) => {
   if(!userId || !role) sendError(500, "userId and role are required")
   const secretKey = new TextEncoder().encode(JWT_SECRET);
@@ -33,11 +27,6 @@ const verifyToken = (userId, token) => {
     return {verified: false, message: "Invalid token"}
   }
   
-  // return jwt.verify(token, JWT_SECRET, (err, response) => {
-  //   if (err) return {verified: false, message: "Invalid token"}
-  //   if (response.userId !== userId) return {verified: false, message: "userId mismatch"}
-  //   return {verified: true, message: "Token is valid"}
-  // });
 };
 
 const authMiddleware = (allowedRoles = []) => ({
@@ -67,16 +56,7 @@ const authMiddleware = (allowedRoles = []) => ({
       console.error("Token verification error:", err);
       return sendError(401, "Unauthorized: Invalid token.");
     }
-    // const decoded = jwt.verify(token, JWT_SECRET);
-    // const { userId, role } = decoded
 
-    // if (!allowedRoles.includes(role)) {
-    //   return sendError(401, `Forbidden: Access denied for role ${role}`);
-    // }
-
-    // // Attach userId to the request for downstream use
-    // request.event.authenticatedUserId = userId;
-    // request.event.userRole = role;
   },
 });
 
@@ -105,25 +85,6 @@ const guestMiddleWare = () => ({
     }
   },
 });
-
-// const guestMiddleWare = () => ({
-//   before: async (request) => {
-//     console.log('request: ', request);
-    
-//     const { Authorization } = request.event.headers || {};
-//     if (!Authorization) {
-//       request.event.userRole = "guest";
-//       return;
-//     }
-//     console.log('Authorization:', Authorization);
-    
-
-//     const token = Authorization?.replace("Bearer ", "");
-//     const decoded = jwt.verify(token, JWT_SECRET);
-//     request.event.authenticatedUserId = decoded.userId;
-//     request.event.userRole = decoded.role;
-//   },
-// });
 
 
 export default { generateToken, verifyToken, authMiddleware, guestMiddleWare };

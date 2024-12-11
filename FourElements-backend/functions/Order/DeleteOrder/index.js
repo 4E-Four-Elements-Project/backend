@@ -6,9 +6,9 @@ import { DeleteCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 
 export const handler = async (event) => {
   try {
-    const { orderId } = event.pathParameters;
-    // const { userId } = JSON.parse(event.body || "{}");
-
+    console.log(event.body);
+    const orderId = JSON.parse(event.body).orderId;
+    
     if (!orderId) {
       return sendError(400, "Invalid input: 'orderId' is required.");
     }
@@ -30,13 +30,6 @@ export const handler = async (event) => {
     }
 
     const {userId} = item
-    // const key = { orderId };
-    // if (userId) {
-    //   key.userId = userId;       
-    // }
-
-    // console.log('key: ', key, 'oderId: ', orderId, 'userId: ', userId);
-    
     
     const deleteParams = {
       TableName: "OrderTable",

@@ -7,7 +7,9 @@ const { sendResponse, sendError } = responseHandler;
 export const handler = async (event) => {
   try {
     const orderId = event.pathParameters.orderId;
-    const { menuId, quantity, price, userId = "guest", comment, orderLocked, paymentMethod } = JSON.parse(event.body);
+    console.log(event);
+    
+    const { menuId, quantity, price, userId = "guest", comment, orderLocked, paymentMethod, orderStatus } = JSON.parse(event.body);
 
     const validMethods = ["Pay Online", "Pay on Pickup"];
     if (paymentMethod && !validMethods.includes(paymentMethod)) {
@@ -24,6 +26,8 @@ export const handler = async (event) => {
     if (typeof price !== "number" || price <= 0) {
       return sendError(400, "Invalid input: 'price' must be a positive number.");
     }
+
+    //lägg till ändra status !!
 
 
     let updateExpression = "SET";
@@ -54,6 +58,11 @@ export const handler = async (event) => {
     if (orderLocked !== undefined) {
       updateExpression += " orderLocked = :orderLocked,";
       expressionAttributeValues[":orderLocked"] = orderLocked;
+    }
+
+    if (orderStatus !== undefined) {
+      updateExpression += " orderStatus = :orderStatus,";
+      expressionAttributeValues[":orderStatus"] = orderStatus;
     }
 
     updateExpression = updateExpression.slice(0, -1);

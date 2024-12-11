@@ -8,9 +8,16 @@ import { jwtVerify } from "jose"; // Import jwtVerify
 const JWT_SECRET = "a1b2c3"; // Replace with process.env.JWT_SECRET in production
 const generateShortUUID = () => {
   const uuid = uuidv4();
-  // Convert the UUID to a buffer, then encode it as base64 and remove padding
-  const encodedUUID = Buffer.from(uuid.replace(/-/g, ''), 'hex').toString('base64').replace(/=+$/, '');
-  return encodedUUID;
+  // Convert the UUID to a buffer, then encode it as base64
+  const encodedUUID = Buffer.from(uuid.replace(/-/g, ''), 'hex').toString('base64');
+  
+  // Replace URL-unfriendly characters for path compatibility
+  const urlSafeEncodedUUID = encodedUUID
+    .replace(/\+/g, '-')   // Replace '+' with '-'
+    .replace(/\//g, '_')   // Replace '/' with '_'
+    .replace(/=+$/, '');    // Remove padding
+
+  return urlSafeEncodedUUID;
 };
 
 export const handler = async (event) => {
@@ -68,7 +75,7 @@ export const handler = async (event) => {
       paymentMethod: selectedPaymentMethod,
       comment: comment || null,
       orderLocked: orderLocked,
-      status: "pending", //cooking//done
+      orderStatus: "pending", //cooking//done
       userId: userId || "guest",
       quantity,
       price,

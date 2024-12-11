@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'; // Import uuid library
-import { PutCommand, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { PutCommand, GetCommand, UpdateCommand, QueryCommand } from "@aws-sdk/lib-dynamodb";
 import responseHandler from "../../../responses/index";
 const { sendResponse, sendError } = responseHandler;
 import db from "../../../services/db";
@@ -44,7 +44,42 @@ export const handler = async (event) => {
       userId = "guest";
     }
 
-    let cartId = uuidv4()
+     // Check if the user already has items in the cart
+     const existingCartParams = {
+      TableName: "CartTable",
+      IndexName: "userId-cartId-index",
+      KeyConditionExpression: "userId = :userId",
+      ExpressionAttributeValues: {
+        ":userId": userId,
+      },
+    };
+
+    const existingCartResult = await db.send(new QueryCommand(existingCartParams));
+
+    let cartId;
+    let totalPrice = 0;
+
+    if (existingCartResult.Items.length > 0) {
+      // User has existing cart, retrieve the cartId and calculate total price
+      cartId = existingCartResult.Items[0].cartId;
+      totalPrice = existingCartResult.Items.reduce((sum, item) => sum + item.price, 0);
+      
+      // Update the cart item with new menuId and price
+      const updateCartItemParams = {
+        TableName: "CartTable",
+        Key: { cartId, menuId },
+        UpdateExpression: "SET price = :price, updatedAt = :updatedAt",
+        ExpressionAttributeValues: {
+          ":price": price,
+          ":updatedAt": new Date().toISOString(),
+        },
+      };
+      await db.send(new UpdateCommand(updateCartItemParams));
+    
+    } else {
+      // No existing cart, generate a new cartId
+      cartId = uuidv4();
+    }
 
     //Check inventory availability
     for (const ingredient of menuItem.ingredients) {
@@ -88,7 +123,7 @@ export const handler = async (event) => {
       }
     }
 
-    //Add to cart
+    //Add new cart item
     const cartItem = {
       cartId,
       userId,
@@ -97,13 +132,34 @@ export const handler = async (event) => {
       createdAt: new Date().toISOString(),
     };
 
-    // Save to DynamoDB
-    const params = {
-      TableName: "CartTable",
-      Item: cartItem,
-    };
+    // Save to DynamoDB (only if cart item is new)
+    if (existingCartResult.Items.length === 0) {
+      const params = {
+        TableName: "CartTable",
+        Item: cartItem,
+      };
 
-    await db.send(new PutCommand(params));
+      await db.send(new PutCommand(params));
+    }
+
+    // Update total price if the user already has a cart
+    if (existingCartResult.Items.length > 0) {
+      totalPrice += price;
+
+      const updateTotalPriceParams = {
+        TableName: "CartTable",
+        Key: {
+          cartId, // Partition key is cartId
+          menuId, // Sort key is menuId
+        },
+        UpdateExpression: "SET totalPrice = :totalPrice",
+        ExpressionAttributeValues: {
+          ":totalPrice": totalPrice,
+        },
+      };
+
+      await db.send(new UpdateCommand(updateTotalPriceParams));
+    }
 
     return sendResponse({
       message: `${menuId} added successfully to cart`,
