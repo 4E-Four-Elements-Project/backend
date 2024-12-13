@@ -104,6 +104,9 @@ export const handler = async (event) => {
       quantity,
     }));
 
+    console.log('menuDetails', menuDetails);
+    
+
     const orderId = generateShortUUID();
 
     const orderItem = {
