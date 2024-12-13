@@ -15,7 +15,7 @@ Welcome to Four Elements, your go-to takeaway restaurant where flavor meets conv
 2. Navigate to the project directory
 
    ```bash
-   cd <location>/frontend
+   cd <location>/backend
    ```
 
 3. Install dependencies  
