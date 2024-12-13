@@ -7,6 +7,14 @@ https://www.figma.com/design/3pHE1aIEZOREBhf5yULsKL/Design-File?node-id=0-1&t=JP
 ## Figjam
 https://www.figma.com/board/Im9f4I7byvOw35eRK5UgeJ/Figjam?node-id=0-1&t=Zg9yCicx37otLY66-1
 
+## Demo accounts
+Admin: 
+ Username: StaffTest
+ password: staff123456
+
+User:
+ Username: Stamkund
+ password: test123
 
 
 ## Getting started
