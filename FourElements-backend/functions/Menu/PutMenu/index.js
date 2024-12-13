@@ -6,14 +6,15 @@ import middy from "@middy/core";
 import jsonBodyParser from '@middy/http-json-body-parser';
 import auth from '../../../middleware/auth';
 const { authMiddleware} = auth
-import httpErrorHandler from '@middy/http-error-handler';
+// import httpErrorHandler from '@middy/http-error-handler';
 import roles from '../../../services/roles';
 
 const putMenuHandler = async (event) => {
   try {
     const body = event.body;
     const { menuId, price, category, description, ingredients } = body;
-
+    console.log(body);
+    
     // Validate input
     if (!menuId) {
       return sendError(400, "Invalid input: 'menuId' is required.");
@@ -62,7 +63,8 @@ const putMenuHandler = async (event) => {
     };
 
     const result = await db.send(new UpdateCommand(updateParams));
-
+    console.log('result: ', result);
+    
     return sendResponse({
       message: `Menu item '${menuId}' updated successfully.`,
       updatedAttributes: result.Attributes,
@@ -83,4 +85,4 @@ const putMenuHandler = async (event) => {
 export const handler = middy(putMenuHandler)
 .use(authMiddleware(["staff"])) // Only allow staff role
 .use(jsonBodyParser())
-.use(httpErrorHandler());
+// .use(httpErrorHandler());

@@ -39,6 +39,6 @@ const deleteMenuHandler = async (event) => {
   }
 };
 
-module.exports.handler = middy(deleteMenuHandler)
+export const handler = middy(deleteMenuHandler)
   .use(authMiddleware(["staff"])) // Only allow staff role
   .use(httpErrorHandler());
