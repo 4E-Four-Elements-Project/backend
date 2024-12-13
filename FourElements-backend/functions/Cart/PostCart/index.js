@@ -11,6 +11,7 @@ export const handler = async (event) => {
   try {
     const body = JSON.parse(event.body); // Parse incoming body
     const { menuId, price } = body;
+        console.log('body', body);
         
     // Validate input
     if (!menuId || !price) {
@@ -72,7 +73,7 @@ export const handler = async (event) => {
         }
       }
       // Extract userId from token if present
-      let userId = "guest"
+      let userId;
 
       if(event.headers?.authorization){
         const authorizationHeader = event.headers.authorization;
@@ -80,7 +81,9 @@ export const handler = async (event) => {
         const secretKey = new TextEncoder().encode(JWT_SECRET);
         const { payload } = await jwtVerify(token, secretKey);
         userId = payload.userId;
-      } 
+      } else {
+        userId = "guest";
+      }
       console.log('userId', userId);
     
       // Add the item to the CartTable
