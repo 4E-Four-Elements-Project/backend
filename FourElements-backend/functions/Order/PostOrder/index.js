@@ -90,19 +90,25 @@ export const handler = async (event) => {
 
     // Aggregate menuIds, prices, and quantities
     const menuIdCounts = {};
+    const menuIdPrices = {};
     let totalPrice = 0;
 
     cartResult.Items.forEach((item) => {
-      const { menuId, price, quantity = 1 } = item;
-      menuIdCounts[menuId] = (menuIdCounts[menuId] || 0) + quantity;
-      totalPrice += price * quantity;
+      const { menuId, price } = item;
+      menuIdCounts[menuId] = (menuIdCounts[menuId] || 0) + 1; // Increment count for the menuId
+      menuIdPrices[menuId] = price; // Store the price for the menuId
+      totalPrice += price; // Add price to total
     });
 
     // Convert menuIdCounts to an array of { menuId, quantity } objects
     const menuDetails = Object.entries(menuIdCounts).map(([menuId, quantity]) => ({
       menuId,
+      price: menuIdPrices[menuId],
       quantity,
     }));
+
+    console.log('menuDetails', menuDetails);
+    
 
     const orderId = generateShortUUID();
 
